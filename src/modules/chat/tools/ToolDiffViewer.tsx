@@ -1,0 +1,92 @@
+import React, { useMemo } from 'react';
+
+import type { DiffLine } from '@/shared/types';
+
+type ToolDiffViewerProps = {
+  oldContent: string;
+  newContent: string;
+  filePath: string;
+  createDiff: (oldStr: string, newStr: string) => DiffLine[];
+  onFileClick?: () => void;
+  badge?: string;
+  badgeColor?: 'gray' | 'green';
+};
+
+/**
+ * Compact diff viewer on the conversation tool surface.
+ *
+ * Rendered by chat's ToolRenderer for edit/write tools so a turn's file changes
+ * are reviewable inline.
+ */
+export const ToolDiffViewer: React.FC<ToolDiffViewerProps> = ({
+  oldContent,
+  newContent,
+  filePath,
+  createDiff,
+  onFileClick,
+  badge = 'Diff',
+  badgeColor = 'gray'
+}) => {
+  const badgeClasses = badgeColor === 'green'
+    ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400';
+
+  const diffLines = useMemo(
+    () => {
+      if (oldContent === undefined || newContent === undefined) {
+        return [];
+      }
+      return createDiff(oldContent, newContent)
+    },
+    [createDiff, oldContent, newContent]
+  );
+
+  return (
+    <div className="min-w-0 overflow-hidden rounded-lg border border-border/60">
+      {/* Header */}
+      <div className="flex min-w-0 items-center justify-between border-b border-border/60 bg-background/60 px-3 py-2">
+        {onFileClick ? (
+          <button
+            onClick={onFileClick}
+            className="min-w-0 cursor-pointer truncate font-mono text-xs text-foreground hover:underline"
+          >
+            {filePath}
+          </button>
+        ) : (
+          <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+            {filePath}
+          </span>
+        )}
+        <span className={`rounded px-1.5 py-px text-[10px] font-medium ${badgeClasses} ml-2 flex-shrink-0`}>
+          {badge}
+        </span>
+      </div>
+
+      {/* Diff lines */}
+      <div className="font-mono text-xs leading-5">
+        {diffLines.map((diffLine, i) => (
+          <div key={i} className="flex">
+            <span
+              className={`w-6 flex-shrink-0 select-none text-center ${
+                diffLine.type === 'removed'
+                  ? 'bg-red-50 text-red-400 dark:bg-red-950/30 dark:text-red-500'
+                  : 'bg-green-50 text-green-400 dark:bg-green-950/30 dark:text-green-500'
+              }`}
+            >
+              {diffLine.type === 'removed' ? '-' : '+'}
+            </span>
+            <span
+              className={`min-w-0 flex-1 whitespace-pre-wrap break-words px-2 ${
+                diffLine.type === 'removed'
+                  ? 'bg-red-50/50 text-red-800 dark:bg-red-950/20 dark:text-red-200'
+                  : 'bg-green-50/50 text-green-800 dark:bg-green-950/20 dark:text-green-200'
+              }`}
+            >
+              {diffLine.content}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

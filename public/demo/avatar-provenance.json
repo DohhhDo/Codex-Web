@@ -1,0 +1,4 @@
+{
+  "source": "OpenAI image generation, created for Codex-Web screenshot demo",
+  "prompt": "Create one square 1024x1024 profile avatar for a fictional developer named DOhhhDO. A charming cream-colored cat wearing chunky terracotta-orange over-ear headphones and a small warm ivory astronaut helmet, close-up face and shoulders centered, amused confident expression, minimal editorial clay 3D illustration, soft tactile matte ceramic surfaces, no text, no lettering, no logos. Flat sage green background, warm off-white and burnt orange limited palette, large clear face readable in a tiny circular 28px profile thumbnail. Clean polished art direction, simple silhouette, no clutter, square composition with room for a circular crop. This is an asset for a local software demo website. Save the generated asset and return its local path."
+}

@@ -1,0 +1,241 @@
+/* Codex-Web: Claude recording reference, with the original Codex identity.
+   Neutral interface chrome; self-hosted serif for invitations and responses. */
+@font-face { font-family: Poppins; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/poppins-400.woff2') format('woff2'); }
+@font-face { font-family: Poppins; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/poppins-500.woff2') format('woff2'); }
+@font-face { font-family: Poppins; font-style: normal; font-weight: 600 900; font-display: swap; src: url('/fonts/poppins-600.woff2') format('woff2'); }
+@font-face { font-family: Lora; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/lora.woff2') format('woff2'); }
+:root {
+  --codex-sidebar: #f0eee6;
+  --codex-settings: #faf9f5;
+  --codex-text-accent: #a54b30;
+  --codex-body-font: Lora, 'Noto Serif CJK SC', 'Songti SC', SimSun, Georgia, serif;
+  --codex-ui-font: Arial, 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+  --codex-content-width: 780px;
+  color-scheme: light;
+}
+.dark { --codex-sidebar: #111111; --codex-settings: #191919; --codex-text-accent: #eaa58f; color-scheme: dark; }
+body { font-family: var(--codex-ui-font); }
+h1, h2, h3 { font-family: var(--codex-ui-font); }
+::selection { background: #d9775740; color: inherit; }
+:where(button, a, input, textarea, select):focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+:where(input, textarea) { caret-color: var(--codex-text-accent); }
+:where(input, textarea)::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+:where(*) { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+.codex-wordmark { font-family: var(--codex-body-font); font-size: 21px; font-weight: 500; letter-spacing: -0.035em; }
+.codex-sidebar { background: var(--codex-sidebar); }
+.codex-sidebar-header { flex-shrink: 0; padding: 12px 8px 0; }
+.codex-sidebar-footer { flex-shrink: 0; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); border-top: 1px solid hsl(var(--border) / .6); }
+.codex-icon-button { display: inline-flex; width: 32px; height: 32px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 7px; color: hsl(var(--muted-foreground)); }
+.codex-icon-button:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.codex-icon-button:disabled { opacity: .45; }
+.codex-sidebar-brand { min-height: 36px; margin-bottom: 12px; padding-inline: 4px; }
+.codex-new-chat { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 34px; padding: 6px 10px; border-radius: 6px; background: hsl(var(--accent)); color: hsl(var(--foreground)); font-size: 14px; font-weight: 400; }
+.codex-new-chat:hover { background: color-mix(in srgb, hsl(var(--accent)), hsl(var(--foreground)) 6%); }
+.codex-sidebar-search { background: transparent; border: 1px solid hsl(var(--border)); border-radius: 8px; box-shadow: none; font-size: 12px; }
+.codex-sidebar-navigation { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 8px; }
+.codex-nav-item { position: relative; display: flex; width: 100%; min-width: 0; align-items: center; justify-content: center; min-height: 34px; padding: 7px; border-radius: 6px; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.codex-running-count { position: absolute; top: 2px; right: 5px; color: hsl(var(--muted-foreground)); font-size: 10px; line-height: 14px; font-variant-numeric: tabular-nums; }
+.codex-nav-item:hover, .codex-nav-item.is-active { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.codex-nav-item.is-active { font-weight: 500; }
+.codex-project-row { position: relative; min-height: 36px; border-radius: 6px; padding: 6px 8px; }
+.codex-project-row .text-xs { font-size: 11px; line-height: 16px; }
+.codex-project-row .text-sm { font-size: 14px; line-height: 20px; }
+.codex-sidebar .text-muted-foreground\/40, .codex-sidebar .text-muted-foreground\/50, .codex-sidebar .text-muted-foreground\/60 { color: hsl(var(--muted-foreground)); }
+.codex-home-header { border-bottom: 1px solid hsl(var(--border) / .45); display: flex; align-items: center; min-height: 68px; padding: 0 30px; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.codex-home { color: hsl(var(--foreground)); flex: 1; min-height: 0; overflow-y: auto; display: flex; padding: 30px 32px 80px; }
+.codex-home-inner { width: min(100%, 640px); margin: auto; }
+.codex-home h1 { font-family: var(--codex-body-font); font-size: clamp(27px, 3vw, 36px); font-weight: 400; line-height: 1.4; letter-spacing: -.035em; text-wrap: balance; }
+.codex-home-description { margin-top: 14px; color: hsl(var(--muted-foreground)); font-size: 14px; line-height: 1.9; }
+.codex-project-picker { margin-top: 32px; padding: 0 6px 6px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 16px; }
+.codex-project-choice { display: flex; justify-content: space-between; align-items: center; gap: 24px; width: 100%; padding: 13px 16px; border-radius: 9px; text-align: left; }
+.codex-project-choice:hover { background: hsl(var(--muted)); }
+.codex-auth-screen { display: flex; flex-direction: column; min-height: 100dvh; height: 100dvh; overflow-y: auto; padding: 28px 36px 24px; background: hsl(var(--background)); }
+.codex-auth-main { width: min(100%, 380px); margin: auto; padding: 48px 0; }
+.codex-auth-form { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 16px; padding: 26px; }
+.codex-auth-form input { border-radius: 8px; background: hsl(var(--background)); }
+.codex-auth-form button[type=submit] { border-radius: 8px; box-shadow: none; min-height: 44px; }
+.codex-auth-form label { font-weight: 400; font-size: 12px; }
+[data-codex-workspace-header] { min-height: 68px; display: flex; align-items: center; border-bottom-color: hsl(var(--border) / .45); padding-inline: 24px; backdrop-filter: none; }
+[data-codex-workspace-header] > div { width: 100%; }
+.codex-workspace-tabs { background: transparent; border: 0; box-shadow: none; }
+.codex-workspace-tabs [role=tab] { font-size: 12px; font-weight: 400; box-shadow: none; }
+.codex-workspace-tabs [aria-selected=true] { background: hsl(var(--accent)); --tw-ring-shadow: 0 0 #0000; }
+.codex-chat-heading { font-family: var(--codex-body-font); font-size: clamp(26px, 3vw, 34px); font-weight: 400; line-height: 1.4; letter-spacing: -.03em; }
+.codex-model-choice { border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); text-align: left; }
+.codex-model-choice:hover { background: hsl(var(--muted)); }
+.codex-chat-welcome { padding-bottom: 32px; }
+.chat-messages-pane > .max-w-\[54\.25rem\], .codex-composer-column { max-width: var(--codex-content-width); }
+.codex-prompt { border-radius: 14px; background: hsl(var(--card)); box-shadow: none; }
+.codex-prompt:focus-within { border-color: color-mix(in srgb, hsl(var(--border)), hsl(var(--foreground)) 12%); }
+.codex-prompt .codex-input-text { padding: 16px 16px 18px; font-size: 15px; line-height: 24px; }
+/* The outer boundary and caret identify the writing surface; no nested ring. */
+.codex-prompt textarea:focus, .codex-prompt textarea:focus-visible { outline: none; box-shadow: none; }
+.codex-prompt textarea { min-height: 58px; font-family: var(--codex-ui-font); }
+.codex-prompt .codex-composer-send { border-radius: 50%; box-shadow: none; }
+.codex-user-bubble { background: hsl(var(--card)); }
+.codex-user-bubble .prose { font-family: var(--codex-ui-font); font-size: 14px; line-height: 1.85; }
+.chat-message.assistant .prose { font-family: var(--codex-body-font); font-size: 16px; line-height: 1.85; color: hsl(var(--foreground)); }
+.chat-message.assistant .prose :where(p, li) { color: inherit; }
+.chat-message.assistant .prose :where(h1,h2,h3,h4) { font-family: var(--codex-ui-font); font-weight: 500; }
+.chat-message.assistant .prose :where(pre,code) { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 13px; }
+.chat-composer-shell { padding-top: 12px; padding-bottom: 16px; }
+.codex-composer-column { width: 100%; margin-inline: auto; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.codex-composer-context { display: flex; flex-direction: column; gap: 8px; max-height: 34dvh; overflow-y: auto; overscroll-behavior: contain; }
+.codex-composer-context:empty { display: none; }
+.nav-glass { background: hsl(var(--background)); backdrop-filter: none; }
+.nav-tab-active { box-shadow: none; }
+.codex-app .text-primary { color: var(--codex-text-accent); }
+.codex-app svg.text-primary { color: hsl(var(--primary)); }
+@media (max-width: 767px) {
+  .codex-sidebar-header { padding-top: 20px; }
+  .codex-home-header { min-height: 58px; padding-inline: 12px; }
+  .codex-home { padding: 12px 24px 36px; }
+  .codex-home h1 { font-family: var(--codex-body-font); font-size: 27px; }
+  .codex-home-description { font-size: 13px; }
+  .codex-project-picker { margin-top: 24px; }
+  .codex-project-choice { padding: 12px; }
+  .codex-auth-screen { padding: 20px; }
+  .codex-auth-form { padding: 22px; }
+  .codex-chat-welcome { padding-bottom: 0; }
+  [data-codex-workspace-header] { padding: 10px 12px; min-height: 88px; }
+  .chat-composer-shell { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .codex-prompt .codex-input-text { font-size: 16px; }
+  .codex-chat-heading { font-size: 27px; }
+  .chat-message.assistant .prose { font-size: 15px; }
+}
+/* A new chat groups its invitation and composer; established transcripts scroll above it. */
+.codex-conversation-new { justify-content: center; --codex-content-width: 640px; }
+.codex-conversation-new .chat-messages-pane { flex: 0 1 auto; padding-top: 16px; }
+.codex-conversation-new .chat-messages-pane > div { min-height: 0; }
+.codex-conversation-new .codex-chat-welcome { padding-bottom: 4px; }
+.codex-conversation-new .chat-composer-shell { padding-top: 24px; padding-bottom: 8vh; }
+.codex-session-row { background: transparent; border-color: transparent; }
+.codex-session-row:hover, .codex-session-selected { background: hsl(var(--accent)); }
+.codex-session-row .text-sm { font-size: 13px; }
+.codex-session-row .bg-muted\/50 { background: transparent; }
+.codex-prompt .text-muted-foreground\/50, .codex-chat-welcome .text-muted-foreground\/60 { color: hsl(var(--muted-foreground)); }
+@media (max-width: 767px) {
+  .codex-conversation-new .chat-composer-shell { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  .codex-conversation-new .chat-messages-pane { flex-shrink: 1; }
+  .codex-conversation-new .codex-chat-welcome { height: auto; }
+}
+@media (max-height: 600px) {
+  .codex-conversation-new { justify-content: flex-start; }
+  .codex-conversation-new .chat-messages-pane { flex: 1; }
+  .codex-conversation-new .chat-composer-shell { padding-bottom: 8px; padding-top: 8px; }
+}
+
+/* The writing surface has three resting controls; details live outside it. */
+.codex-composer-add { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: hsl(var(--foreground)); transition: background .15s; }
+.codex-composer-add:hover, .codex-composer-add[aria-expanded=true] { background: hsl(var(--muted)); }
+.codex-composer-model { display: flex; align-items: center; gap: 7px; height: 32px; min-width: 0; max-width: 260px; padding: 0 6px; border-radius: 6px; font-size: 13px; font-weight: 500; color: hsl(var(--foreground)); }
+.codex-composer-model:hover { background: hsl(var(--muted)); }
+.codex-composer-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; padding: 4px 8px 0; }
+.codex-composer-permission { display: inline-flex; align-items: center; gap: 5px; max-width: 65%; min-height: 24px; border-radius: 5px; padding: 2px 4px; font-size: 11px; }
+.codex-composer-permission:hover { background: hsl(var(--muted)); }
+.codex-composer-hint { min-width: 0; text-align: right; font-size: 11px; color: hsl(var(--muted-foreground)); opacity: 0; transition: opacity .15s; }
+.chat-composer-shell:focus-within .codex-composer-hint, .codex-composer-hint.is-queue { opacity: 1; }
+.codex-composer-add:focus-visible, .codex-composer-model:focus-visible, .codex-composer-permission:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+@media (max-width: 767px) {
+  .codex-input-text { font-size: 16px; }
+  .codex-composer-model { max-width: 190px; }
+  .codex-composer-hint:not(.is-queue) { display: none; }
+  .codex-composer-permission { min-height: 32px; max-width: 75%; }
+}
+
+.codex-model-choice.codex-model-library-link { display: flex; align-items: center; gap: 6px; margin: 12px auto 0; padding: 5px 8px; width: fit-content; border: 0; border-radius: 6px; background: transparent; font-size: 11px; color: hsl(var(--muted-foreground)); }
+.codex-model-choice.codex-model-library-link:hover { color: hsl(var(--foreground)); background: hsl(var(--muted)); }
+
+/* Project tools share the row edge instead of taking space from every title. */
+.codex-project-actions { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+.codex-project-row:has(input) { padding-right: 72px; }
+.codex-project-edit { display: none; }
+.codex-project-row:hover .codex-project-edit, .codex-project-row:focus-within .codex-project-edit { display: flex; opacity: 1; }
+.codex-project-row:hover .codex-project-actions, .codex-project-row:focus-within .codex-project-actions { background: hsl(var(--accent)); border-radius: 4px; }
+.codex-project-mobile { font-size: 12px; }
+@media (hover: none) {
+  .codex-project-row { padding-right: 80px; }
+  .codex-project-edit { display: flex; opacity: 1; }
+}
+
+@media (max-width: 639px) {
+  [data-slot="confirmation-actions"] > button { flex: 1 0 auto; }
+}
+
+/* Conversation tool disclosures use one quiet surface for commands and code. */
+.codex-tool-surface { min-width: 0; border: 1px solid hsl(var(--border) / .65); border-radius: 12px; background: hsl(var(--background)); }
+.codex-tool-heading { display: flex; min-width: 0; min-height: 42px; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 11px; color: hsl(var(--muted-foreground)); font-size: 12px; line-height: 20px; transition: background .15s; }
+.codex-tool-heading:hover { background: hsl(var(--muted) / .6); }
+.codex-tool-heading:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.codex-tool-content { min-width: 0; padding: 16px; border-top: 1px solid hsl(var(--border) / .55); border-radius: 0 0 11px 11px; background: var(--codex-sidebar); }
+.codex-tool-code { margin: 0; font-size: 12px; line-height: 1.75; tab-size: 2; }
+.codex-tool-command { display: block; margin-bottom: 12px; color: hsl(var(--foreground)); }
+.codex-tool-toggle, .codex-tool-copy { display: inline-flex; width: 28px; height: 28px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 6px; color: hsl(var(--muted-foreground)); }
+.codex-tool-toggle:hover, .codex-tool-copy:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.codex-tool-group-content { display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; border-top: 1px solid hsl(var(--border) / .55); }
+.codex-tool-group-content .chat-message { padding-inline: 0; }
+.codex-tool-group-content .codex-tool-surface { border-color: transparent; border-radius: 8px; }
+.codex-tool-error { border-color: hsl(var(--destructive) / .35); }
+@media (max-width: 639px) {
+  .codex-tool-heading { padding-inline: 10px; gap: 6px; }
+  .codex-tool-content { padding: 12px; }
+  .codex-tool-group-content { padding: 8px; }
+}
+
+/* Settings follow the reference's two direct surfaces, without nested cards. */
+.codex-welcome-title { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.codex-welcome-title > svg { flex-shrink: 0; width: 38px; height: 38px; }
+.codex-settings { position: relative; background: var(--codex-settings); }
+.codex-settings-nav { background: hsl(var(--background)); }
+.codex-settings-card { background: transparent; }
+.codex-settings input:not([type=checkbox]), .codex-settings select, .codex-settings textarea { background: hsl(var(--secondary)); border-color: hsl(var(--border)); }
+.codex-settings-row { flex-wrap: wrap; }
+.codex-settings-row > :first-child { min-width: min(100%, 180px); }
+.codex-composer-menu { box-shadow: 0 8px 24px rgb(0 0 0 / .14); }
+@media (min-width: 768px) {
+  .codex-settings { max-width: 1100px; width: calc(100vw - 80px); }
+  .codex-settings-header { position: absolute; top: 12px; right: 16px; z-index: 1; padding: 0; border: 0; }
+  .codex-settings-header > h2 { display: none; }
+  .codex-settings-content { padding: 28px 32px; }
+}
+@media (max-width: 767px) {
+  .codex-welcome-title { gap: 10px; }
+  .codex-welcome-title > svg { width: 30px; height: 30px; }
+}
+
+/* The sidebar follows the recording's flat, title-first reading order. */
+.codex-sidebar-list-heading { display: flex; min-height: 32px; align-items: center; justify-content: space-between; gap: 8px; margin-top: 32px; margin-bottom: 4px; padding-left: 10px; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.codex-sidebar-list-heading .codex-icon-button { width: 28px; height: 28px; }
+.codex-conversation-link { display: flex; width: 100%; min-width: 0; min-height: 34px; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 6px; text-align: left; color: hsl(var(--foreground) / .82); font-size: 14px; font-weight: 400; line-height: 20px; }
+.codex-conversation-link:hover, .codex-conversation-link.is-selected { color: hsl(var(--foreground)); background: hsl(var(--accent)); }
+.codex-conversation-status { display: flex; width: 14px; height: 16px; flex-shrink: 0; align-items: center; justify-content: center; color: hsl(var(--muted-foreground)); }
+.codex-conversation-dot { width: 6px; height: 6px; border: 1px solid hsl(var(--muted-foreground) / .4); border-radius: 50%; }
+.codex-session-options { opacity: 0; pointer-events: none; background: var(--codex-sidebar); border-radius: 6px; }
+.codex-conversation-row:hover .codex-session-options, .codex-conversation-row:focus-within .codex-session-options, .codex-session-options:has([aria-expanded=true]), .codex-session-options.is-editing { opacity: 1; pointer-events: auto; }
+.codex-conversation-row:hover .codex-session-options { background: hsl(var(--accent)); }
+.codex-conversation-row:has(.codex-session-options.is-editing) .codex-conversation-link { visibility: hidden; }
+.codex-session-options.is-editing { left: 8px; }
+.codex-session-options.is-editing input { width: 100%; min-width: 0; }
+.codex-account-row { min-height: 40px; color: hsl(var(--foreground) / .85); }
+@media (hover: none), (max-width: 767px) {
+  .codex-conversation-link { min-height: 42px; padding-right: 36px; }
+  .codex-session-options { opacity: 1; pointer-events: auto; }
+  .codex-new-chat, .codex-nav-item { min-height: 40px; }
+  .codex-account-row { min-height: 44px; }
+  .codex-sidebar-list-heading { margin-top: 24px; }
+}
+
+.codex-sidebar-search:focus, .codex-sidebar-search:focus-visible { border-color: hsl(var(--input)); outline: none; box-shadow: none; --tw-ring-shadow: 0 0 #0000; }
+
+/* Terminal controls share the app chrome; ANSI colors belong to terminal output. */
+.codex-terminal-action { display: inline-flex; min-height: 32px; align-items: center; gap: 6px; border-radius: 6px; padding: 6px 10px; color: hsl(var(--muted-foreground)); font-size: 12px; line-height: 20px; }
+.codex-terminal-action:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+.codex-terminal-action:disabled { cursor: not-allowed; opacity: .45; }
+.codex-terminal-action.bg-primary { color: hsl(var(--primary-foreground)); }
+.codex-terminal .xterm { height: 100%; }
+.codex-notifications .codex-settings-row > :last-child { max-width: 100%; margin-left: auto; }
+
+.codex-composer-meta { flex-wrap: wrap; align-items: flex-start; }
+.codex-usage-footer { display: flex; flex: 1; min-width: 180px; max-width: 100%; justify-content: flex-end; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding-block: 4px; color: hsl(var(--muted-foreground)); font-size: 11px; line-height: 18px; font-variant-numeric: tabular-nums; }
+.codex-usage-footer > * { white-space: nowrap; }
+@media (max-width: 767px) { .codex-usage-footer { gap: 2px 8px; font-size: 10px; } }

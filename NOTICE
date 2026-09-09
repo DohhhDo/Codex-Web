@@ -1,0 +1,41 @@
+CloudCLI UI
+Copyright 2025-2026 Siteboon AI B.V. and contributors
+
+This software is licensed under the GNU Affero General Public License v3.0
+or later (AGPL-3.0-or-later). See the LICENSE file for the full license text,
+including additional terms under Section 7.
+
+Originally developed by Siteboon AI B.V. (https://github.com/siteboon/claudecodeui).
+
+Contributions by Siteboon AI B.V. prior to commit 004135ef were originally
+published under GPL-3.0 and are hereby relicensed to AGPL-3.0-or-later.
+Contributions by other authors prior to that commit remain under GPL-3.0
+and are incorporated into this work as permitted by GPL-3.0 Section 13.
+
+--- Codex-Web modifications ---
+
+Codex-Web
+Independent project maintained by DOhhhDO.
+
+Codex-Web is derived from CloudCLI / siteboon/claudecodeui, upstream version
+1.37.3, commit 70e57859b6224ff0eb0539fcde7d13a3186c9c93.
+Upstream: https://github.com/siteboon/claudecodeui
+Original contributors retain their copyright in their contributions.
+The existing GNU Affero General Public License is preserved in LICENSE;
+package licensing remains AGPL-3.0-or-later.
+
+Codex-Web changes include Codex-focused navigation and branding, the visual
+system, icon migration, composer and settings redesigns, terminal theming,
+usage metadata display, screenshot demo, and bilingual project documentation.
+
+The visual direction references Anthropic's public brand guidelines.
+Codex-Web is not an official OpenAI or Anthropic product and is not endorsed
+by either company. Third-party product names identify their integrations.
+
+Phosphor Icons: MIT; see public/licenses/phosphor-icons.txt.
+Bundled fonts: see public/fonts/ for their respective OFL licenses.
+Anthropic brand-guidelines skill: see .agents/skills/brand-guidelines/LICENSE.txt.
+The demo avatar was generated for this project; its provenance and exact
+prompt are recorded in public/demo/avatar-provenance.json.
+
+Required upstream attribution: CloudCLI UI (https://github.com/siteboon/claudecodeui)

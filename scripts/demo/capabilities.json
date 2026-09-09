@@ -1,0 +1,79 @@
+{
+  "success": true,
+  "data": {
+    "providers": [
+      {
+        "provider": "claude",
+        "permissionModes": [
+          "default",
+          "auto",
+          "acceptEdits",
+          "bypassPermissions",
+          "plan"
+        ],
+        "defaultPermissionMode": "default",
+        "supportsImages": true,
+        "supportsFiles": true,
+        "supportsAbort": true,
+        "supportsPermissionRequests": true,
+        "supportsTokenUsage": true,
+        "supportsEffort": true,
+        "supportsMessageEditing": true,
+        "supportsSessionForking": true
+      },
+      {
+        "provider": "cursor",
+        "permissionModes": [
+          "default",
+          "acceptEdits",
+          "bypassPermissions",
+          "plan"
+        ],
+        "defaultPermissionMode": "default",
+        "supportsImages": true,
+        "supportsFiles": true,
+        "supportsAbort": true,
+        "supportsPermissionRequests": false,
+        "supportsTokenUsage": false,
+        "supportsEffort": false,
+        "supportsMessageEditing": false,
+        "supportsSessionForking": false
+      },
+      {
+        "provider": "codex",
+        "permissionModes": [
+          "default",
+          "acceptEdits",
+          "bypassPermissions"
+        ],
+        "defaultPermissionMode": "default",
+        "supportsImages": true,
+        "supportsFiles": true,
+        "supportsAbort": true,
+        "supportsPermissionRequests": false,
+        "supportsTokenUsage": true,
+        "supportsEffort": true,
+        "supportsMessageEditing": true,
+        "supportsSessionForking": true
+      },
+      {
+        "provider": "opencode",
+        "permissionModes": [
+          "default",
+          "acceptEdits",
+          "bypassPermissions",
+          "plan"
+        ],
+        "defaultPermissionMode": "default",
+        "supportsImages": true,
+        "supportsFiles": true,
+        "supportsAbort": true,
+        "supportsPermissionRequests": false,
+        "supportsTokenUsage": true,
+        "supportsEffort": true,
+        "supportsMessageEditing": false,
+        "supportsSessionForking": false
+      }
+    ]
+  }
+}
