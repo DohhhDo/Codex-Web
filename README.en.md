@@ -8,7 +8,7 @@
 
 Codex-Web is a self-hosted web workspace focused on Codex. Resume local conversations, switch projects, browse files, and review code changes without hunting through terminal windows. Its Claude-inspired interface supports light and dark themes and mobile layouts.
 
-Independently maintained by **DOhhhDO**, derived from [CloudCLI UI](https://github.com/siteboon/claudecodeui).
+Independently maintained by **DohhhDo**, derived from [CloudCLI UI](https://github.com/siteboon/claudecodeui).
 
 ![Codex-Web dark conversation view](docs/screenshots/demo/chat-dark.png)
 
