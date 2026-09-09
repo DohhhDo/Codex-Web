@@ -8,7 +8,7 @@
 
 Codex-Web 是一个以 Codex 为主的自托管 Web 工作区。继续本机的对话、切换工程、查看文件和代码变更，不用在多个终端窗口之间来回寻找会话。界面参考 Claude 的视觉风格，提供深浅主题和手机布局。
 
-由 **DOhhhDO** 独立维护，基于 [CloudCLI UI](https://github.com/siteboon/claudecodeui) 衍生开发。
+由 **DohhhDo** 独立维护，基于 [CloudCLI UI](https://github.com/siteboon/claudecodeui) 衍生开发。
 
 ![Codex-Web 深色对话界面](docs/screenshots/demo/chat-dark.png)
 
