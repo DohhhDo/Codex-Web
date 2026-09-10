@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { XIcon as X } from '@phosphor-icons/react/dist/csr/X';
 
+import { Dialog, DialogContent } from '@/shared/ui';
 import { StandaloneShell } from '@/modules/standalone-shell';
 import { IS_PLATFORM } from '@/shared/utils';
 import type { LLMProvider } from '@/shared/types';
@@ -74,7 +75,7 @@ const getProviderTitle = (provider: LLMProvider) => {
 export default function ProviderLoginModal({
   isOpen,
   onClose,
-  provider = 'claude',
+  provider = 'codex',
   onComplete,
   customCommand,
   isAuthenticated = false,
@@ -85,21 +86,22 @@ export default function ProviderLoginModal({
   }
 
   const command = getProviderCommand({ provider, customCommand, isAuthenticated });
-  const title = getProviderTitle(provider);
+  const title = provider === 'codex' ? t('settings:profile.codexAuthorization') : getProviderTitle(provider);
 
   const handleComplete = (exitCode: number) => {
+    if (provider === 'codex' && exitCode === 0) window.dispatchEvent(new Event('codex-account-changed'));
     onComplete?.(exitCode);
     // Keep the modal open so users can read terminal output before closing.
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 max-md:items-stretch max-md:justify-stretch">
-      <div className="flex h-3/4 w-full max-w-4xl flex-col rounded-lg bg-white shadow-xl dark:bg-gray-800 max-md:m-0 max-md:h-full max-md:max-w-none max-md:rounded-none md:m-4 md:h-3/4 md:max-w-4xl md:rounded-lg">
-        <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+    <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent wrapperClassName="z-[9999]" aria-label={title} className="flex h-3/4 w-full max-w-4xl flex-col rounded-lg bg-background dark:bg-secondary max-md:m-0 max-md:h-full max-md:max-w-none max-md:rounded-none md:m-4 md:h-3/4 md:max-w-4xl md:rounded-lg">
+        <div className="flex items-center justify-between border-b border-border p-4 dark:border-border">
+          <h3 className="text-lg font-semibold text-foreground dark:text-foreground">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
+            className="text-muted-foreground transition-colors hover:text-muted-foreground dark:hover:text-muted-foreground"
             aria-label={t('common:misc.closeLoginModal')}
           >
             <X className="h-6 w-6" />
@@ -109,7 +111,7 @@ export default function ProviderLoginModal({
         <div className="flex-1 overflow-hidden">
           <StandaloneShell project={DEFAULT_PROJECT_FOR_EMPTY_SHELL} command={command} onComplete={handleComplete} minimal={true} />
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

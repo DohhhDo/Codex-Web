@@ -9,6 +9,7 @@ import http from 'http';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import cors from 'cors';
 
+import { automationsRoutes, initializeAutomationDispatcher, closeAutomationDispatcher } from '@/modules/automations/index.js';
 import { AppError, findApplicationRoot, getModuleDirectory, IS_PLATFORM, terminalTextStyles } from '@/shared/utils.js';
 import {
     closeSessionsWatcher,
@@ -193,6 +194,7 @@ app.use('/api/browser-use', authenticateToken, browserUseRoutes);
 // Unified provider MCP routes (protected)
 app.use('/api/providers', authenticateToken, providerRoutes);
 app.use('/api/scheduled-messages', authenticateToken, scheduledMessagesRoutes);
+app.use('/api/automations', authenticateToken, automationsRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
@@ -368,6 +370,7 @@ async function startServer() {
             // Sends anything that came due while the server was not running,
             // then keeps polling.
             initializeScheduledMessageDispatcher(providerRuntimeService);
+            initializeAutomationDispatcher(providerRuntimeService);
 
             // Start server-side plugin processes for enabled plugins
             startEnabledPluginServers().catch(err => {
@@ -377,6 +380,7 @@ async function startServer() {
 
         await closeSessionsWatcher();
         closeScheduledMessageDispatcher();
+        closeAutomationDispatcher();
         // Clean up plugin processes on shutdown
         const shutdownRuntimeServices = async () => {
             try {

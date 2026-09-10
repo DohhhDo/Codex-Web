@@ -7,6 +7,7 @@ import { TrashIcon as Trash2 } from '@phosphor-icons/react/dist/csr/Trash';
 import { UploadSimpleIcon as Upload } from '@phosphor-icons/react/dist/csr/UploadSimple';
 import { useTranslation } from 'react-i18next';
 
+import { Dialog, DialogContent } from '@/shared/ui';
 import type { ConfirmActionType, ConfirmationRequest } from '@/shared/types';
 
 const CONFIRMATION_TITLES: Record<ConfirmActionType, string> = {
@@ -37,7 +38,7 @@ const CONFIRMATION_BUTTON_CLASSES: Record<ConfirmActionType, string> = {
   commit: 'bg-primary hover:bg-primary/90',
   pull: 'bg-green-600 hover:bg-green-700',
   push: 'bg-orange-600 hover:bg-orange-700',
-  publish: 'bg-purple-600 hover:bg-purple-700',
+  publish: 'bg-primary hover:bg-primary',
   revertLocalCommit: 'bg-yellow-600 hover:bg-yellow-700',
   deleteBranch: 'bg-red-600 hover:bg-red-700',
 };
@@ -119,17 +120,9 @@ export default function ConfirmActionModal({ action, onCancel, onConfirm }: Conf
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCancel} />
-      {/*
-        Capped to the viewport with only the message scrolling, so a long body
-        (a multi-paragraph commit message, a long file list) can never push the
-        Cancel/Confirm buttons off screen.
-      */}
-      <div
-        className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
-        role="dialog"
-        aria-modal="true"
+    <Dialog open onOpenChange={open => { if (!open) handleCancel(); }}>
+      <DialogContent
+        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-card shadow-none"
         aria-labelledby={titleId}
       >
         <div className="flex shrink-0 items-center px-6 pt-6">
@@ -189,7 +182,7 @@ export default function ConfirmActionModal({ action, onCancel, onConfirm }: Conf
             </span>
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

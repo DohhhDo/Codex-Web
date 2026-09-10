@@ -73,6 +73,7 @@ export type ProviderRuntimeGateway = {
     writer: ProviderRuntimeWriter,
   ): Promise<unknown>;
   abort(provider: LLMProvider, sessionId: string): Promise<boolean>;
+  control?(provider: LLMProvider, sessionId: string, action: string, input: AnyRecord): Promise<unknown>;
   resolveToolApproval(requestId: string, payload: ProviderPermissionDecision): void;
   getPendingApprovalsForSession(sessionId: string): unknown[];
 };
@@ -122,10 +123,12 @@ function sendProtocolError(
   ws: WebSocket,
   code: string,
   error: string,
-  sessionId?: string
+  sessionId?: string,
+  affectsRun = true,
 ): void {
   sendJson(ws, {
     kind: 'protocol_error',
+    affectsRun,
     code,
     error,
     sessionId: sessionId ?? null,
@@ -297,9 +300,35 @@ async function dispatchRun(
     // a queued message can start the session's next run before this promise
     // settles, and the session-keyed completeRun would kill that new run.
     chatRunRegistry.completeRunIfCurrent(run, { exitCode: 1 });
+    const terminal = [...run.events].reverse().find((event) => event.kind === 'complete');
+    if (!failure && (terminal?.exitCode !== 0 || terminal?.aborted)) {
+      failure = String([...run.events].reverse().find((event) => event.kind === 'error')?.content ?? (terminal?.aborted ? 'Run interrupted.' : 'Run failed.'));
+    }
   }
 
   return { started: true, error: failure };
+}
+
+/** Validates live controls against the active app session before provider dispatch. */
+async function handleChatControl(ws: WebSocket, data: AnyRecord, dependencies: ChatWebSocketDependencies) {
+  const sessionId = readRequiredSessionId(data);
+  const reject = (error: string) => sendJson(ws, { kind: 'control_result', sessionId, requestId: data.requestId, action: data.action, error });
+  const run = sessionId ? chatRunRegistry.getRun(sessionId) : null;
+  const session = sessionId ? sessionsDb.getSessionById(sessionId) : null;
+  if (!sessionId || !session || (data.action === 'steer' && run?.status !== 'running')) {
+    reject('There is no active run to control.');
+    return;
+  }
+  if (!dependencies.runtime.control || typeof data.action !== 'string') {
+    reject('Live controls are not available.');
+    return;
+  }
+  try {
+    const result = await dependencies.runtime.control(session.provider as LLMProvider, sessionId, data.action, data.input ?? {});
+    sendJson(ws, { kind: 'control_result', sessionId, requestId: data.requestId, action: data.action, result });
+  } catch (error) {
+    reject(error instanceof Error ? error.message : String(error));
+  }
 }
 
 /**
@@ -626,6 +655,9 @@ export function handleChatConnection(
           return;
         case 'chat.send':
           await handleChatSend(ws, userId, data, dependencies);
+          return;
+        case 'chat.control':
+          await handleChatControl(ws, data, dependencies);
           return;
         case 'chat.abort':
           await handleChatAbort(ws, data, dependencies);

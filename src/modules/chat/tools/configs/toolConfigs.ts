@@ -35,7 +35,7 @@ export type ToolDisplayConfig = {
     title?: string | ((result: any) => string);
     defaultOpen?: boolean;
     // Special result handlers
-    contentType?: 'markdown' | 'file-list' | 'todo-list' | 'text' | 'success-message' | 'task' | 'question-answer';
+    contentType?: 'markdown' | 'file-list' | 'todo-list' | 'text' | 'web-search' | 'success-message' | 'task' | 'question-answer';
     getMessage?: (result: any) => string;
     getContentProps?: (result: any) => any;
   };
@@ -180,7 +180,7 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       type: 'collapsible',
       title: 'Search results',
       defaultOpen: false,
-      contentType: 'text',
+      contentType: 'web-search',
       getContentProps: (result) => ({ content: String(result?.content || ''), format: 'plain' })
     }
   },

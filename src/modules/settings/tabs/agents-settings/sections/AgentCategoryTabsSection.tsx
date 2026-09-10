@@ -31,7 +31,7 @@ export default function AgentCategoryTabsSection({
             className={cn(
               'whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium touch-manipulation transition-colors duration-150',
               selectedCategory === category
-                ? 'border-primary text-primary'
+                ? 'border-foreground text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >

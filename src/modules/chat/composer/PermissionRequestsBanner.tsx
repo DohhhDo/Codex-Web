@@ -2,6 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldWarningIcon as ShieldAlertIcon } from '@phosphor-icons/react/dist/csr/ShieldWarning';
 
+import { CodexElicitationPanel } from '@/modules/chat/tools/InteractiveRenderers/CodexElicitationPanel';
+
 import type { PendingPermissionRequest } from '@/shared/types';
 import { buildClaudeToolPermissionEntry, formatToolInputForDisplay } from '@/modules/chat/utils/chatPermissions';
 import { getClaudeSettings } from '@/modules/chat/utils/chatStorage';
@@ -16,6 +18,7 @@ import {
 } from '@/modules/chat/composer/Confirmation';
 
 registerPermissionPanel('AskUserQuestion', AskUserQuestionPanel);
+registerPermissionPanel('CodexElicitation', CodexElicitationPanel);
 
 type PermissionRequestsBannerProps = {
   pendingPermissionRequests: PendingPermissionRequest[];
@@ -60,7 +63,7 @@ export default function PermissionRequestsBanner({
         }
 
         const rawInput = formatToolInputForDisplay(request.input);
-        const permissionEntry = buildClaudeToolPermissionEntry(request.toolName, rawInput);
+        const permissionEntry = (request.context as { provider?: string } | undefined)?.provider === 'codex' ? null : buildClaudeToolPermissionEntry(request.toolName, rawInput);
         const settings = getClaudeSettings();
         const alreadyAllowed = permissionEntry ? settings.allowedTools.includes(permissionEntry) : false;
         const rememberLabel = alreadyAllowed ? 'Allow (saved)' : 'Allow & remember';

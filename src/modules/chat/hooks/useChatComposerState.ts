@@ -1,3 +1,4 @@
+import { useChatControls } from '@/modules/chat/hooks/useChatControls';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   ChangeEvent,
@@ -14,7 +15,7 @@ import { useDropzone } from 'react-dropzone';
 import { api } from '@/shared/api';
 import { PROVIDER_PERMISSION_PREFERENCE_KEYS } from '@/shared/constants';
 import { readUserPreference } from '@/shared/userSettings';
-import type { CommandModalPayload, CostCommandData, HelpCommandData, MarkSessionProcessing, ModelCommandData, QueuedDraft, SessionActivityMap, StatusCommandData,QueuedSendOptions,ChatAttachment,ChatMessage,PendingPermissionRequest,PermissionMode,SessionEstablishedContext,Project,ProjectSession,LLMProvider,SlashCommand } from '@/shared/types';
+import type { ServerEvent, CommandModalPayload, CostCommandData, HelpCommandData, MarkSessionProcessing, ModelCommandData, QueuedDraft, SessionActivityMap, StatusCommandData,QueuedSendOptions,ChatAttachment,ChatMessage,PendingPermissionRequest,PermissionMode,SessionEstablishedContext,Project,ProjectSession,LLMProvider,SlashCommand } from '@/shared/types';
 import { grantClaudeToolPermission } from '@/modules/chat/utils/chatPermissions';
 import {
   clearQueuedMessage,
@@ -37,6 +38,7 @@ type UseChatComposerStateArgs = {
   provider: LLMProvider;
   permissionMode: PermissionMode | string;
   cyclePermissionMode: () => void;
+  selectPermissionMode?: (mode: PermissionMode) => void;
   resolvePermissionModeForProvider: (provider: LLMProvider, requestedMode: PermissionMode | string) => PermissionMode;
   /**
    * Model every send and command carries: the open session's model when there
@@ -49,6 +51,7 @@ type UseChatComposerStateArgs = {
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
   sendMessage: (message: unknown) => void;
+  subscribe?: (listener: (event: ServerEvent) => void) => () => void;
   sendByCtrlEnter?: boolean;
   onSessionProcessing?: MarkSessionProcessing;
   /**
@@ -160,6 +163,7 @@ export function useChatComposerState({
   provider,
   permissionMode,
   cyclePermissionMode,
+  selectPermissionMode,
   resolvePermissionModeForProvider,
   currentProviderModel,
   currentProviderEffort,
@@ -167,6 +171,7 @@ export function useChatComposerState({
   canAbortSession,
   tokenBudget,
   sendMessage,
+  subscribe,
   sendByCtrlEnter,
   onSessionProcessing,
   onSessionEstablished,
@@ -177,6 +182,7 @@ export function useChatComposerState({
   setIsUserScrolledUp,
   setPendingPermissionRequests,
 }: UseChatComposerStateArgs) {
+  const sendControl = useChatControls(sendMessage, subscribe);
   // The composer text together with the chat scope it belongs to. They are one
   // state rather than a value plus a ref because they have to move in lockstep:
   // on a session switch there is one commit where the scope has already changed
@@ -212,6 +218,9 @@ export function useChatComposerState({
   const [fileErrors, setFileErrors] = useState<Map<string, string>>(new Map());
   const [isTextareaExpanded, setIsTextareaExpanded] = useState(false);
   const [commandModalPayload, setCommandModalPayload] = useState<CommandModalPayload | null>(null);
+
+  // Discovery is contextual to the composer and does not navigate away from the session.
+  const [codexPanel, setCodexPanel] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
@@ -374,6 +383,26 @@ export function useChatComposerState({
 
       try {
         const effectiveInput = rawInput ?? input;
+        if (provider === 'codex' && command.metadata?.execution === 'discovery') {
+          setCodexPanel(command.name.slice(1));
+          setInput('');
+          inputValueRef.current = '';
+          return;
+        }
+        if (provider === 'codex' && command.name === '/plan') {
+          const remainder = effectiveInput.startsWith('/plan') ? effectiveInput.slice(5).trim() : '';
+          selectPermissionMode?.(remainder === 'off' ? 'default' : 'plan');
+          setInput(remainder === 'off' ? '' : remainder);
+          inputValueRef.current = remainder === 'off' ? '' : remainder;
+          return;
+        }
+        if (provider === 'codex' && command.metadata?.execution === 'runtime') {
+          const content = effectiveInput.startsWith(command.name) ? effectiveInput : command.name;
+          setInput(content);
+          inputValueRef.current = content;
+          setTimeout(() => handleSubmitRef.current?.(createFakeSubmitEvent()), 0);
+          return;
+        }
         const commandMatch = effectiveInput.match(new RegExp(`${escapeRegExp(command.name)}\\s*(.*)`));
         const args =
           commandMatch && commandMatch[1] ? commandMatch[1].trim().split(/\s+/) : [];
@@ -430,6 +459,7 @@ export function useChatComposerState({
     [
       currentProviderModel,
       currentSessionId,
+      selectPermissionMode,
       handleBuiltInCommand,
       handleCustomCommand,
       input,
@@ -458,8 +488,6 @@ export function useChatComposerState({
     slashCommands,
     slashCommandsCount,
     filteredCommands,
-    frequentCommands,
-    commandQuery,
     showCommandMenu,
     selectedCommandIndex,
     resetCommandMenuState,
@@ -631,6 +659,29 @@ export function useChatComposerState({
         return;
       }
 
+      // Live controls must be handled before draft queueing. They address the
+      // existing turn instead of waiting for it to finish.
+      const controlMatch = provider === 'codex' ? currentInput.match(/^\/(steer|goal)\s+([\s\S]+)$/) : null;
+      if (controlMatch && (controlMatch[1] === 'steer' || isLoading)) {
+        if (currentAttachments.length || previouslyUploadedAttachments.length) {
+          addMessage({ type: 'error', content: 'Live instructions accept text only. Remove the attachments or queue a regular message.', timestamp: new Date() });
+          return;
+        }
+        const targetSessionId = selectedSession?.id || currentSessionId;
+        if (!targetSessionId || !isLoading) {
+          addMessage({ type: 'error', content: 'No active turn. Send a message to start working first.', timestamp: new Date() });
+          return;
+        }
+        const argument = controlMatch[2].trim();
+        const operation = ['status', 'pause', 'resume', 'clear'].includes(argument) ? argument : 'set';
+        try {
+          await sendControl(targetSessionId, controlMatch[1], controlMatch[1] === 'steer' ? { content: argument } : { operation, ...(operation === 'set' ? { objective: argument } : {}) });
+          if (inputValueRef.current === currentInput) { setInput(''); inputValueRef.current = ''; }
+          resetCommandMenuState();
+        } catch (error) { addMessage({ type: 'error', content: error instanceof Error ? error.message : String(error), timestamp: new Date() }); }
+        return;
+      }
+
       // A turn is already in flight: stash this message instead of sending it.
       // Upload attached files now so the queued record contains durable image
       // descriptors that can be sent even if another session is open later.
@@ -719,12 +770,12 @@ export function useChatComposerState({
           (commandName === '/help'
             ? ({
                 name: '/help',
-                description: 'Show help documentation for Claude Code',
+                description: 'Show available commands',
                 namespace: 'builtin',
                 metadata: { type: 'builtin' },
               } as SlashCommand)
             : undefined);
-        if (matchedCommand && matchedCommand.type !== 'skill') {
+        if (matchedCommand && matchedCommand.type !== 'skill' && matchedCommand.metadata?.execution !== 'runtime') {
           executeCommand(matchedCommand, isHelpAlias ? '/help' : commandInput);
           recordSentMessage(currentInput);
           setInput('');
@@ -884,6 +935,7 @@ export function useChatComposerState({
       currentSessionId,
       editingAnchorId,
       executeCommand,
+      sendControl,
       isLoading,
       onSessionProcessing,
       onSessionEstablished,
@@ -1219,6 +1271,8 @@ export function useChatComposerState({
   }, [setInput]);
 
   return {
+    codexPanel,
+    setCodexPanel,
     input,
     setInput,
     editingAnchorId,
@@ -1229,8 +1283,6 @@ export function useChatComposerState({
     isTextareaExpanded,
     slashCommandsCount,
     filteredCommands,
-    frequentCommands,
-    commandQuery,
     showCommandMenu,
     selectedCommandIndex,
     resetCommandMenuState,

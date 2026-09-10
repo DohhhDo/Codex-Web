@@ -91,6 +91,12 @@ export function createProviderRuntimeService(
       return Boolean(await dependencies.resolveProvider(providerName).runtime.abort(sessionId));
     },
 
+    async control(providerName: LLMProvider, sessionId: string, action: string, input: AnyRecord): Promise<unknown> {
+      const runtime = dependencies.resolveProvider(providerName).runtime;
+      if (!runtime.control) throw new Error('This provider does not support live controls.');
+      return runtime.control(sessionId, action, { ...input, providerSessionId: dependencies.resolveProviderSessionId(sessionId) });
+    },
+
     resolveToolApproval(requestId: string, decision: ProviderPermissionDecision): void {
       for (const provider of dependencies.listProviders()) {
         provider.runtime.permissions?.resolve(requestId, decision);

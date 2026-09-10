@@ -207,6 +207,8 @@ const MessageComponent = memo(({ message, prevMessage, createDiff, onFileOpen, s
 
           <div className="w-full">
 
+            {message.images?.length ? <ChatMessageImages images={message.images} projectId={selectedProject?.projectId} /> : null}
+            {message.files?.length ? <ChatMessageFiles files={message.files} /> : null}
             {message.isSubagentContainer ? (
               /* A spawned agent owns its whole card — header, timeline and
                  result — so it never goes through the tool input/result pair. */

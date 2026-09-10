@@ -32,7 +32,14 @@
     "loadingSessions": "加载会话中...",
     "unnamed": "未命名",
     "loading": "加载中...",
-    "showMore": "显示更多会话"
+    "showMore": "显示更多会话",
+    "options": "会话操作",
+    "optionsFor": "会话操作：{{name}}",
+    "rename": "重命名",
+    "fork": "创建分支",
+    "forkDescription": "从当前会话的副本继续。",
+    "archive": "归档会话",
+    "delete": "删除会话"
   },
   "tooltips": {
     "viewEnvironments": "查看环境",
@@ -160,5 +167,22 @@
     "loadFailed": "无法加载最近对话",
     "loadMore": "加载更早的对话",
     "loadingMore": "正在加载…"
+  },
+  "archived": {
+    "loadingTitle": "正在加载归档…",
+    "noMatchingSessions": "没有匹配的归档",
+    "emptyTitle": "还没有归档会话",
+    "tryDifferentSearch": "试试其他关键词。",
+    "emptyDescription": "在会话的更多菜单中选择「归档会话」，历史记录会保留在这里。",
+    "restoreHint": "历史记录仍然保留，可随时恢复会话。",
+    "restore": "恢复会话",
+    "deletePermanently": "永久删除",
+    "restoreProject": "恢复项目",
+    "restoreAction": "恢复"
+  },
+  "running": {
+    "emptyTitle": "当前没有运行中的会话",
+    "noMatchingSessions": "没有匹配的运行中会话。",
+    "emptyDescription": "Codex 正在处理的会话会显示在这里。"
   }
 }

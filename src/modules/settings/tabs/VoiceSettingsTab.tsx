@@ -29,7 +29,7 @@ export default function VoiceSettingsTab() {
   return (
     <div className="space-y-8">
       <SettingsSection title={t('voiceSettings.title')} description={t('voiceSettings.description')}>
-        <div className="flex items-center justify-between rounded-lg border border-border p-3">
+        <div className="flex items-center justify-between gap-4 border-b border-border py-4">
           <div className="pr-3">
             <div className="text-sm font-medium text-foreground">{t('voiceSettings.enable')}</div>
             <div className="text-xs text-muted-foreground">{t('voiceSettings.enableDescription')}</div>

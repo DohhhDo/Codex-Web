@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -8,6 +8,7 @@ import { closeConnection, initializeDatabase, scheduledMessagesDb, sessionDrafts
 import { dispatchDueScheduledMessages, dispatchQueuedMessages } from '@/modules/scheduled-messages/services/scheduled-message-dispatcher.service.js';
 import { scheduledMessagesService } from '@/modules/scheduled-messages/services/scheduled-messages.service.js';
 import { chatRunRegistry } from '@/modules/websocket/index.js';
+import type { ProviderRuntimeWriter } from '@/shared/types.js';
 
 const SESSION_ID = 'scheduled-session';
 
@@ -17,6 +18,7 @@ async function withIsolatedDatabase(runTest: (userId: number) => void | Promise<
 
   closeConnection();
   process.env.DATABASE_PATH = path.join(tempDirectory, 'auth.db');
+  await writeFile(process.env.DATABASE_PATH, '');
   await initializeDatabase();
 
   try {
@@ -37,14 +39,16 @@ async function withIsolatedDatabase(runTest: (userId: number) => void | Promise<
 
 type RunCall = { provider: string; command: string; options: Record<string, unknown> };
 
-function createRuntime(runs: RunCall[], behaviour: 'ok' | 'throw' = 'ok', aborts: string[] = []) {
+function createRuntime(runs: RunCall[], behaviour: 'ok' | 'throw' | 'emit-failure' = 'ok', aborts: string[] = []) {
   return {
     hasRuntime: () => true,
-    run: async (provider: string, command: string, options: Record<string, unknown>) => {
+    run: async (provider: string, command: string, options: Record<string, unknown>, writer: ProviderRuntimeWriter) => {
       if (behaviour === 'throw') {
         throw new Error('provider exploded');
       }
       runs.push({ provider, command, options });
+      if (behaviour === 'emit-failure') writer.send({ kind: 'error', content: 'provider reported a failure' });
+      writer.send({ kind: 'complete', exitCode: behaviour === 'emit-failure' ? 1 : 0 });
     },
     abort: async (_provider: string, sessionId: string) => {
       aborts.push(sessionId);
@@ -212,6 +216,16 @@ test('a provider failure is recorded on the message instead of vanishing', async
     const row = scheduledMessagesDb.listForSession(userId, SESSION_ID)[0];
     assert.equal(row.status, 'failed');
     assert.match(row.failure_reason ?? '', /provider exploded/);
+  });
+});
+
+test('a provider that reports failure through events is not recorded as successful', async () => {
+  await withIsolatedDatabase(async (userId) => {
+    scheduledMessagesService.schedule({ userId, sessionId: SESSION_ID, content: 'Run checks', scheduledFor: new Date(Date.now() - 1_000).toISOString() });
+    await dispatchDueScheduledMessages(createRuntime([], 'emit-failure'));
+    const row = scheduledMessagesDb.listForSession(userId, SESSION_ID)[0];
+    assert.equal(row.status, 'failed');
+    assert.match(row.failure_reason ?? '', /provider reported a failure/);
   });
 });
 

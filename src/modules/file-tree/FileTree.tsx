@@ -18,7 +18,7 @@ import { useFileTreeViewMode } from '@/modules/file-tree/hooks/useFileTreeViewMo
 import { useFileTreeUpload } from '@/modules/file-tree/hooks/useFileTreeUpload';
 import type { FileTreeImageSelection, FileTreeNode,Project } from '@/shared/types';
 import { formatFileSize, formatRelativeTime, isImageFile } from '@/modules/file-tree/utils/fileTreeUtils';
-import { ScrollArea, Input } from '@/shared/ui';
+import { Input, Dialog, DialogContent, DialogTitle } from '@/shared/ui';
 import FileTreeBody from '@/modules/file-tree/FileTreeBody';
 import FileTreeDetailedColumns from '@/modules/file-tree/FileTreeDetailedColumns';
 import FileTreeHeader from '@/modules/file-tree/FileTreeHeader';
@@ -35,7 +35,9 @@ type FileTreeProps = {
 /** Exported through the file-tree barrel; the project-workspace module renders it as the Files sidebar tab. */
 export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps) {
   const { t } = useTranslation();
+  // Retain the selected image while its preview is open.
   const [selectedImage, setSelectedImage] = useState<FileTreeImageSelection | null>(null);
+  // Surface the result of the latest file operation.
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const newItemInputRef = useRef<HTMLInputElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
@@ -116,8 +118,8 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
   }, [operations.renamingItem]);
 
   const renderFileIcon = useCallback((filename: string) => {
-    const { icon: Icon, color } = getFileIconData(filename);
-    return <Icon className={cn(ICON_SIZE_CLASS, color)} />;
+    const { icon: Icon } = getFileIconData(filename);
+    return <Icon className={cn(ICON_SIZE_CLASS, 'text-muted-foreground')} />;
   }, []);
 
   // Centralized click behavior keeps file actions identical across all presentation modes.
@@ -157,7 +159,7 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
   return (
     <div
       ref={treeRef}
-      className="relative flex h-full flex-col bg-background"
+      className="codex-files relative flex h-full min-w-0 flex-col bg-background"
       onDragEnter={upload.handleDragEnter}
       onDragOver={upload.handleDragOver}
       onDragLeave={upload.handleDragLeave}
@@ -176,9 +178,9 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
 
       {/* Drag overlay; pointer-events-none keeps folder rows reachable as drop targets */}
       {upload.isDragOver && (
-        <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center border-2 border-dashed border-blue-500 bg-blue-500/10">
+        <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center border-2 border-dashed border-primary/50 bg-background/90">
           <div className="flex items-center gap-3 rounded-lg bg-background/95 px-6 py-4 shadow-lg">
-            <Upload className="h-6 w-6 text-blue-500" />
+            <Upload className="h-6 w-6 text-muted-foreground" />
             <span className="text-sm font-medium">
               {upload.dropTarget
                 ? t('fileTree.dropToUploadTo', 'Drop files to upload to "{{folder}}"', {
@@ -191,6 +193,8 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
       )}
 
       <FileTreeHeader
+        projectName={selectedProject?.displayName}
+        projectPath={selectedProject?.fullPath || selectedProject?.path}
         viewMode={viewMode}
         onViewModeChange={changeViewMode}
         searchQuery={searchQuery}
@@ -208,9 +212,9 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
 
       <FileTreeUploadProgress upload={upload.uploadProgress} />
 
-      {viewMode === 'detailed' && filteredFiles.length > 0 && <FileTreeDetailedColumns />}
-
-      <ScrollArea className="flex-1 px-2 py-1">
+      <div className="min-h-0 flex-1 overflow-auto">
+        <div className={cn('px-3 pb-3 sm:px-5', viewMode === 'detailed' ? 'min-w-[640px]' : 'pt-3')}>
+        {viewMode === 'detailed' && filteredFiles.length > 0 && <FileTreeDetailedColumns />}
         {/* New item input */}
         {operations.isCreating && (
           <div
@@ -218,7 +222,7 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
             style={{ paddingLeft: `${(operations.newItemParent.split('/').length - 1) * 16 + 4}px` }}
           >
             {operations.newItemType === 'directory' ? (
-              <Folder className={cn(ICON_SIZE_CLASS, 'text-blue-500')} />
+              <Folder className={cn(ICON_SIZE_CLASS, 'text-muted-foreground')} />
             ) : (
               <span className="ml-[18px]">{renderFileIcon(operations.newItemName)}</span>
             )}
@@ -273,7 +277,8 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
           renameInputRef={renameInputRef}
           operationLoading={operationLoading}
         />
-      </ScrollArea>
+        </div>
+      </div>
 
       {selectedImage && (
         <ImageViewer
@@ -284,18 +289,18 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
 
       {/* Delete Confirmation Dialog */}
       {operations.deleteConfirmation.isOpen && operations.deleteConfirmation.item && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-          <div className="mx-4 max-w-sm rounded-lg border border-border bg-background p-4 shadow-lg">
+        <Dialog open onOpenChange={(open) => { if (!open && !operationLoading) operations.handleCancelDelete(); }}>
+          <DialogContent className="codex-dialog w-[calc(100%-2rem)] max-w-sm p-6">
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/30">
-                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div className="p-1">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
               <div>
-                <h3 className="font-medium text-foreground">
+                <DialogTitle className="font-medium text-foreground">
                   {t('fileTree.delete.title', 'Delete {{type}}', {
                     type: operations.deleteConfirmation.item.type === 'directory' ? 'Folder' : 'File'
                   })}
-                </h3>
+                </DialogTitle>
                 <p className="text-sm text-muted-foreground">
                   {operations.deleteConfirmation.item.name}
                 </p>
@@ -323,18 +328,18 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
                 {t('fileTree.delete.confirm', 'Delete')}
               </button>
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Toast Notification */}
       {toast && (
-        <div
+        <div role="status"
           className={cn(
-            'fixed bottom-4 right-4 z-[9999] px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-2',
+            'fixed bottom-4 right-4 left-4 sm:left-auto z-[9999] px-4 py-3 rounded-lg border border-border bg-popover text-popover-foreground shadow-md flex items-center gap-2',
             toast.type === 'success'
-              ? 'bg-green-600 text-white'
-              : 'bg-red-600 text-white'
+              ? 'text-foreground'
+              : 'text-destructive'
           )}
         >
           {toast.type === 'success' ? (

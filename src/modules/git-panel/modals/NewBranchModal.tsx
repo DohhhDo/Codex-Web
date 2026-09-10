@@ -52,16 +52,13 @@ export default function NewBranchModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div
-        className="relative w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
-        role="dialog"
-        aria-modal="true"
+    <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent
+        className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-none"
         aria-labelledby="new-branch-title"
       >
         <div className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-foreground">{t('git:newBranch.title')}</h3>
+          <h3 id="new-branch-title" className="mb-4 text-lg font-semibold text-foreground">{t('git:newBranch.title')}</h3>
 
           <div className="mb-4">
             <label htmlFor="git-new-branch-name" className="mb-2 block text-sm font-medium text-foreground/80">
@@ -122,7 +119,7 @@ export default function NewBranchModal({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
-}
+}import { Dialog, DialogContent } from '@/shared/ui';

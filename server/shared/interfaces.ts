@@ -35,6 +35,8 @@ export interface IProviderRuntime {
     context: ProviderRuntimeContext,
   ): Promise<unknown>;
   abort(sessionId: string): boolean | Promise<boolean>;
+  /** Applies an explicitly supported control to a running session (e.g. steer). */
+  control?(sessionId: string, action: string, input: AnyRecord): Promise<unknown>;
   permissions?: ProviderRuntimePermissionGateway;
 }
 

@@ -1,6 +1,8 @@
 // @ts-nocheck -- temporary while command handlers are extracted into the injected service.
 import path from "path";
 
+import { commandCatalogService } from "@/modules/commands/services/command-catalog.service.js";
+
 import express from "express";
 
 import { parseFrontMatter } from "../../shared/frontmatter.js";
@@ -168,9 +170,11 @@ async function scanCommandsDirectory(dir, baseDir, namespace) {
  * Built-in commands that are always available
  */
 const builtInCommands = [
+  { name: '/model', description: 'Choose the model for this conversation', namespace: 'builtin', metadata: { type: 'builtin' } },
+  { name: '/context', description: 'Inspect conversation token usage and context capacity', namespace: 'builtin', metadata: { type: 'builtin' } },
   {
     name: "/help",
-    description: "Show help documentation for Claude Code",
+    description: "Show available commands",
     namespace: "builtin",
     metadata: { type: "builtin" },
   },
@@ -188,7 +192,7 @@ const builtInCommands = [
   },
   {
     name: "/memory",
-    description: "Open CLAUDE.md memory file for editing",
+    description: "Open project instructions for editing",
     namespace: "builtin",
     metadata: { type: "builtin" },
   },
@@ -212,11 +216,11 @@ const builtInCommands = [
  */
 const builtInHandlers = {
   "/help": async (args, context) => {
-    const helpText = `# Claude Code Commands
+    const helpText = `# Codex-Web Commands
 
 ## Built-in Commands
 
-${builtInCommands
+${[...commandCatalogService.additional(context?.provider), ...builtInCommands]
   .map(
     (cmd) => `### ${cmd.name}
 ${cmd.description}
@@ -227,8 +231,8 @@ ${cmd.description}
 ## Custom Commands
 
 Custom commands can be created in:
-- Project: \`.claude/commands/\` (project-specific)
-- User: \`~/.claude/commands/\` (available in all projects)
+- Project: \`${context?.provider === 'codex' ? '.codex/prompts/' : '.claude/commands/'}\` (project-specific)
+- User: \`~/${context?.provider === 'codex' ? '.codex/prompts/' : '.claude/commands/'}\` (available in all projects)
 
 ### Command Syntax
 
@@ -249,7 +253,7 @@ Custom commands can be created in:
       data: {
         content: helpText,
         format: "markdown",
-        commands: builtInCommands.map((command) => ({
+        commands: [...builtInCommands, ...commandCatalogService.additional(context?.provider)].map((command) => ({
           name: command.name,
           description: command.description,
           namespace: command.namespace,
@@ -399,12 +403,12 @@ Custom commands can be created in:
         action: "memory",
         data: {
           error: "No project selected",
-          message: "Please select a project to access its CLAUDE.md file",
+          message: "Please select a project to access its instructions",
         },
       };
     }
 
-    const claudeMdPath = path.join(projectPath, "CLAUDE.md");
+    const claudeMdPath = path.join(projectPath, context?.provider === "codex" ? "AGENTS.md" : "CLAUDE.md");
 
     // Check if CLAUDE.md exists
     let exists = false;
@@ -422,8 +426,8 @@ Custom commands can be created in:
         path: claudeMdPath,
         exists,
         message: exists
-          ? `Opening CLAUDE.md at ${claudeMdPath}`
-          : `CLAUDE.md not found at ${claudeMdPath}. Create it to store project-specific instructions.`,
+          ? `Opening ${path.basename(claudeMdPath)} at ${claudeMdPath}`
+          : `${path.basename(claudeMdPath)} not found at ${claudeMdPath}. Create it to store project-specific instructions.`,
       },
     };
   },
@@ -439,18 +443,22 @@ Custom commands can be created in:
   },
 };
 
+builtInHandlers['/model'] = builtInHandlers['/models'];
+builtInHandlers['/context'] = builtInHandlers['/cost'];
+
 /**
  * POST /api/commands/list
  * List all available commands from project and user directories
  */
 router.post("/list", async (req, res) => {
   try {
-    const { projectPath } = req.body;
+    const { projectPath, provider } = req.body;
+    const commandFolder = provider === "codex" ? [".codex", "prompts"] : [".claude", "commands"];
     const allCommands = [...builtInCommands];
 
     // Scan project-level commands (.claude/commands/)
     if (projectPath) {
-      const projectCommandsDir = path.join(projectPath, ".claude", "commands");
+      const projectCommandsDir = path.join(projectPath, ...commandFolder);
       const projectCommands = await scanCommandsDirectory(
         projectCommandsDir,
         projectCommandsDir,
@@ -461,7 +469,7 @@ router.post("/list", async (req, res) => {
 
     // Scan user-level commands (~/.claude/commands/)
     const homeDir = os.homedir();
-    const userCommandsDir = path.join(homeDir, ".claude", "commands");
+    const userCommandsDir = path.join(homeDir, ...commandFolder);
     const userCommands = await scanCommandsDirectory(
       userCommandsDir,
       userCommandsDir,
@@ -478,9 +486,9 @@ router.post("/list", async (req, res) => {
     customCommands.sort((a, b) => a.name.localeCompare(b.name));
 
     res.json({
-      builtIn: builtInCommands,
+      builtIn: [...commandCatalogService.additional(req.body.provider), ...builtInCommands],
       custom: customCommands,
-      count: allCommands.length,
+      count: allCommands.length + commandCatalogService.additional(req.body.provider).length,
     });
   } catch (error) {
     console.error("Error listing commands:", error);
@@ -541,10 +549,10 @@ router.post("/execute", async (req, res) => {
     {
       const resolvedPath = path.resolve(commandPath);
       const userBase = path.resolve(
-        path.join(os.homedir(), ".claude", "commands"),
+        path.join(os.homedir(), ...(context.provider === "codex" ? [".codex", "prompts"] : [".claude", "commands"])),
       );
       const projectBase = context?.projectPath
-        ? path.resolve(path.join(context.projectPath, ".claude", "commands"))
+        ? path.resolve(path.join(context.projectPath, ...(context.provider === "codex" ? [".codex", "prompts"] : [".claude", "commands"])))
         : null;
       const isUnder = (base) => {
         const rel = path.relative(base, resolvedPath);
@@ -553,7 +561,7 @@ router.post("/execute", async (req, res) => {
       if (!(isUnder(userBase) || (projectBase && isUnder(projectBase)))) {
         return res.status(403).json({
           error: "Access denied",
-          message: "Command must be in .claude/commands directory",
+          message: "Command must be in the selected provider command directory",
         });
       }
     }

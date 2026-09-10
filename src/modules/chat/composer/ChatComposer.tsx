@@ -1,6 +1,6 @@
 import { CloudArrowUpIcon } from '@phosphor-icons/react/dist/csr/CloudArrowUp';
 import { useTranslation } from 'react-i18next';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type {
   ChangeEvent,
   ClipboardEvent,
@@ -95,7 +95,6 @@ type ChatComposerProps = {
   onCommandSelect: (command: SlashCommand, index: number, isHover: boolean) => void;
   onCloseCommandMenu: () => void;
   isCommandMenuOpen: boolean;
-  frequentCommands: SlashCommand[];
   getRootProps: (...args: unknown[]) => Record<string, unknown>;
   getInputProps: (...args: unknown[]) => Record<string, unknown>;
   openAttachmentPicker: () => void;
@@ -168,7 +167,6 @@ export default function ChatComposer({
   onCommandSelect,
   onCloseCommandMenu,
   isCommandMenuOpen,
-  frequentCommands,
   getRootProps,
   getInputProps,
   openAttachmentPicker,
@@ -189,19 +187,9 @@ export default function ChatComposer({
 }: ChatComposerProps) {
   const { t } = useTranslation('chat');
   const inputHelpId = useId();
+  const commandMenuId = useId();
   const fileDropdownRef = useRef<HTMLDivElement | null>(null);
   const selectedFileRef = useRef<HTMLDivElement | null>(null);
-  const commandMenuPosition = useMemo(() => {
-    if (!isCommandMenuOpen) {
-      return { top: 0, left: 16, bottom: 90 };
-    }
-    const textareaRect = textareaRef.current?.getBoundingClientRect();
-    return {
-      top: textareaRect ? Math.max(16, textareaRect.top - 316) : 0,
-      left: textareaRect ? textareaRect.left : 16,
-      bottom: textareaRect ? window.innerHeight - textareaRect.top + 8 : 90,
-    };
-  }, [isCommandMenuOpen, textareaRef]);
 
   useEffect(() => {
     const dropdown = fileDropdownRef.current;
@@ -352,13 +340,13 @@ export default function ChatComposer({
           )}
 
           <CommandMenu
+            id={commandMenuId}
+            anchorRef={textareaRef}
             commands={filteredCommands}
             selectedIndex={selectedCommandIndex}
             onSelect={onCommandSelect}
             onClose={onCloseCommandMenu}
-            position={commandMenuPosition}
             isOpen={isCommandMenuOpen}
-            frequentCommands={frequentCommands}
           />
 
           <PromptInput
@@ -416,6 +404,11 @@ export default function ChatComposer({
                 placeholder={placeholder}
                 aria-label={t('composer.message', { defaultValue: 'Message' })}
                 aria-describedby={inputHelpId}
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={isCommandMenuOpen}
+                aria-controls={isCommandMenuOpen ? commandMenuId : undefined}
+                aria-activedescendant={isCommandMenuOpen && filteredCommands[selectedCommandIndex] ? `${commandMenuId}-${selectedCommandIndex}` : undefined}
               />
           </PromptInputBody>
 

@@ -72,6 +72,8 @@ export type LLMProvider = 'claude' | 'codex' | 'cursor' | 'opencode';
  * One selectable model row in a provider model catalog.
  */
 export type ProviderModelOption = {
+  /** Modalities reported by native model discovery, absent for fallback entries. */
+  inputModalities?: string[];
   value: string;
   label: string;
   description?: string;
@@ -674,6 +676,9 @@ export type UpsertProviderMcpServerInput = {
  * credential state for each provider.
  */
 export type ProviderAuthStatus = {
+  /** Optional display claims from the local Codex account; not used for authorization. */
+  displayName?: string;
+  avatarUrl?: string;
   installed: boolean;
   /** Subscription claim when supplied by the local provider account. */
   subscriptionLevel?: string;
@@ -1362,4 +1367,12 @@ export type CodexUsageMetadata = {
     primary?: { usedPercent: number; windowMinutes?: number; resetsAt?: number };
     secondary?: { usedPercent: number; windowMinutes?: number; resetsAt?: number };
   };
+};
+
+//----------------- RECURRING AUTOMATIONS ------------
+
+/** Persisted recurring task row shared by its database repository and scheduler. UTC instants are milliseconds. */
+export type AutomationRecord = {
+  id: string; user_id: number; session_id: string; content: string; options: string;
+  interval_minutes: number; next_run_at: number; enabled: number; created_at: number;
 };

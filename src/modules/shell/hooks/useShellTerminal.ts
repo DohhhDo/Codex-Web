@@ -19,7 +19,13 @@ const TERMINAL_RESIZE_DELAY_MS = 50;
 const TERMINAL_OPTIONS: ITerminalOptions = {
   cursorBlink: true,
   fontSize: 14,
-  fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+  fontFamily: '"Codex Terminal Mono", "SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans Mono CJK SC", monospace',
+  lineHeight: 1.4,
+  fontWeight: '400',
+  fontWeightBold: '600',
+  cursorStyle: 'bar',
+  cursorWidth: 2,
+  minimumContrastRatio: 4.5,
   allowProposedApi: true,
   allowTransparency: false,
   convertEol: true,
@@ -82,7 +88,12 @@ function readTerminalTheme(): ITerminalOptions['theme'] {
     foreground: isDark ? '#e5e5e5' : '#242424',
     cursor: isDark ? '#faf9f5' : '#242424',
     cursorAccent: isDark ? '#141414' : '#faf9f5',
-    selectionBackground: '#d9775755',
+    selectionBackground: isDark ? '#ffffff26' : '#24242420',
+    black: '#242424', red: '#d98980', green: '#a3b18a', yellow: '#d8ba83',
+    blue: '#8db3d4', magenta: '#b9a0c5', cyan: '#8bbfbb', white: '#d8d5cc',
+    brightBlack: '#92908a', brightRed: '#edaaa0', brightGreen: '#b9c9a4',
+    brightYellow: '#e8cda0', brightBlue: '#aacbea', brightMagenta: '#d1b9dd',
+    brightCyan: '#a8d6d0', brightWhite: '#faf9f5',
     selectionForeground: isDark ? '#faf9f5' : '#242424',
     ...(!isDark && {
       black: '#242424', red: '#a83232', green: '#386b35', yellow: '#805c17',
@@ -219,6 +230,15 @@ export function useShellTerminal({
     }
 
     nextTerminal.open(terminalContainer);
+    // A local webfont can arrive after xterm measures its cells. Refit this same PTY.
+    void document.fonts?.load('14px "Codex Terminal Mono"').then(() => {
+      if (terminalRef.current !== nextTerminal) return;
+      nextTerminal.options.fontFamily = TERMINAL_OPTIONS.fontFamily;
+      nextFitAddon.fit();
+      nextTerminal.refresh(0, nextTerminal.rows - 1);
+      sendSocketMessage(wsRef.current, { type: 'resize', cols: nextTerminal.cols, rows: nextTerminal.rows });
+    }).catch(() => {});
+
     const themeObserver = new MutationObserver(() => {
       nextTerminal.options.theme = readTerminalTheme();
     });

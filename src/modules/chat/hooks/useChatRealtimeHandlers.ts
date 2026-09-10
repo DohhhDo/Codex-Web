@@ -20,6 +20,7 @@ type UseChatRealtimeHandlersArgs = {
   provider: LLMProvider;
   selectedSession: ProjectSession | null;
   currentSessionId: string | null;
+  onPermissionModeChange?: (mode: 'default' | 'plan') => void;
   setTokenBudget: (budget: Record<string, unknown> | null) => void;
   pendingPermissionRequests: PendingPermissionRequest[];
   setPendingPermissionRequests: Dispatch<SetStateAction<PendingPermissionRequest[]>>;
@@ -61,6 +62,7 @@ export function useChatRealtimeHandlers({
   selectedSession,
   currentSessionId,
   setTokenBudget,
+  onPermissionModeChange,
   pendingPermissionRequests,
   setPendingPermissionRequests,
   streamTimerRef,
@@ -159,7 +161,7 @@ export function useChatRealtimeHandlers({
           if (sid) {
             // Surface the failure in the conversation and stop the spinner —
             // the run never started (or was rejected), so no `complete` follows.
-            onSessionIdle?.(sid);
+            if (msg.affectsRun !== false) onSessionIdle?.(sid);
             sessionStore.appendRealtime(sid, {
               id: `protocol_error_${Date.now()}`,
               sessionId: sid,
@@ -327,6 +329,11 @@ export function useChatRealtimeHandlers({
         }
 
         case 'status': {
+          if (msg.text === 'permission_mode') {
+            if (sid === activeViewSessionId && (msg.permissionMode === 'default' || msg.permissionMode === 'plan')) onPermissionModeChange?.(msg.permissionMode);
+            break;
+          }
+          if (msg.text === 'codex_goal' || msg.text === 'codex_voice_sdp') break;
           if (msg.text === 'token_budget' && msg.tokenBudget) {
             // The counter shows the viewed session's context; budgets from
             // other concurrently running sessions must not overwrite it.
@@ -356,6 +363,7 @@ export function useChatRealtimeHandlers({
     selectedSession,
     currentSessionId,
     setTokenBudget,
+    onPermissionModeChange,
     pendingPermissionRequests,
     setPendingPermissionRequests,
     streamTimerRef,

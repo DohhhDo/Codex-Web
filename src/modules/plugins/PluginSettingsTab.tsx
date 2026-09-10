@@ -168,7 +168,7 @@ function ToggleSwitch({ checked, onChange, ariaLabel }: { checked: boolean; onCh
           relative h-5 w-9 rounded-full bg-muted transition-colors
           duration-200 after:absolute
           after:left-[2px] after:top-[2px] after:h-4 after:w-4
-          after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200
+          after:rounded-full after:bg-background after:shadow-none after:transition-transform after:duration-200
           after:content-[''] peer-checked:bg-emerald-500
           peer-checked:after:translate-x-4
         `}
@@ -231,7 +231,6 @@ function PluginCard({
       }}
     >
       {/* Left accent bar */}
-      <div className={`w-[3px] flex-shrink-0 ${accentColor} transition-colors duration-300`} />
 
       <div className="min-w-0 flex-1 p-4">
         {/* Header row */}
@@ -264,7 +263,7 @@ function PluginCard({
               )}
               <div className="mt-1 flex items-center gap-3">
                 {plugin.author && (
-                  <span className="text-xs text-muted-foreground/60">
+                  <span className="text-xs text-muted-foreground">
                     {plugin.author}
                   </span>
                 )}
@@ -273,7 +272,7 @@ function PluginCard({
                     href={plugin.repoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 transition-colors hover:text-foreground"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <GitBranch className="h-3 w-3" />
                     <span className="max-w-[200px] truncate">
@@ -368,7 +367,7 @@ function RecommendationSection({
         <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
         </h4>
-        <p className="mt-0.5 text-xs text-muted-foreground/70">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {description}
         </p>
       </div>
@@ -393,14 +392,10 @@ function PluginRecommendationCard({
 }) {
   const { t } = useTranslation('settings');
   const Icon = recommendation.icon;
-  const isOfficial = recommendation.source === 'official';
-  const accentClass = isOfficial ? 'bg-blue-500/30' : 'bg-amber-500/40';
-  const hoverClass = isOfficial ? 'hover:border-blue-400 dark:hover:border-blue-500' : 'hover:border-amber-400 dark:hover:border-amber-500';
-  const iconClass = isOfficial ? 'text-blue-500' : 'text-amber-500';
+  const iconClass = 'text-muted-foreground';
 
   return (
-    <div className={`relative flex overflow-hidden rounded-lg border border-dashed border-border bg-card transition-all duration-200 ${hoverClass}`}>
-      <div className={`w-[3px] flex-shrink-0 ${accentClass}`} />
+    <div className="flex border-b border-border py-2">
       <div className="min-w-0 flex-1 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -423,7 +418,7 @@ function PluginRecommendationCard({
                 href={recommendation.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground/60 transition-colors hover:text-foreground"
+                className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 <GitBranch className="h-3 w-3" />
                 {repoSlug(recommendation.repoUrl)}
@@ -433,7 +428,7 @@ function PluginRecommendationCard({
           <button
             onClick={onInstall}
             disabled={disabled}
-            className="flex flex-shrink-0 items-center gap-1.5 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="flex flex-shrink-0 items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {installing ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -573,7 +568,7 @@ export default function PluginSettingsTab() {
 
       {/* Install from Git — compact */}
       <div className="flex items-center gap-0 overflow-hidden rounded-lg border border-border bg-card">
-        <span className="flex-shrink-0 pl-3 pr-1 text-muted-foreground/40">
+        <span className="flex-shrink-0 pl-3 pr-1 text-muted-foreground">
           <GitBranch className="h-3.5 w-3.5" />
         </span>
         <input
@@ -585,7 +580,7 @@ export default function PluginSettingsTab() {
           }}
           placeholder={t('pluginSettings.installPlaceholder')}
           aria-label={t('pluginSettings.installAriaLabel')}
-          className="flex-1 bg-transparent px-2 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+          className="flex-1 bg-transparent px-2 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           onKeyDown={(e) => {
             if (e.key === 'Enter') void handleInstall();
           }}
@@ -593,7 +588,7 @@ export default function PluginSettingsTab() {
         <button
           onClick={handleInstall}
           disabled={installing || !gitUrl.trim()}
-          className="flex-shrink-0 border-l border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-30"
+          className="flex-shrink-0 border-l border-border bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-30"
         >
           {installing ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -607,7 +602,7 @@ export default function PluginSettingsTab() {
         <p className="-mt-4 text-sm text-red-500">{installError}</p>
       )}
 
-      <p className="-mt-4 flex items-start gap-1.5 text-xs leading-snug text-muted-foreground/50">
+      <p className="-mt-4 flex items-start gap-1.5 text-xs leading-snug text-muted-foreground">
         <ShieldAlert className="mt-px h-3 w-3 flex-shrink-0" />
         <span>
           {t('pluginSettings.securityWarning')}
@@ -662,8 +657,8 @@ export default function PluginSettingsTab() {
 
       {/* Starter plugin */}
       <div className="flex items-center justify-center gap-3 border-t border-border/50 pt-2">
-        <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40" />
-        <span className="text-xs text-muted-foreground/60">
+        <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">
           {t('pluginSettings.starterPluginLabel')}
         </span>
         <span className="text-muted-foreground/20">·</span>
@@ -671,7 +666,7 @@ export default function PluginSettingsTab() {
           href={STARTER_PLUGIN_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           {t('pluginSettings.starter')} <ExternalLink className="h-2.5 w-2.5" />
         </a>
@@ -680,7 +675,7 @@ export default function PluginSettingsTab() {
           href="https://cloudcli.ai/docs/plugin-overview"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           {t('pluginSettings.docs')} <ExternalLink className="h-2.5 w-2.5" />
         </a>

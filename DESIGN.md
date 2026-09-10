@@ -52,6 +52,8 @@ The resting input surface contains three controls: a left-aligned **+** action m
 
 Show the approval mode as a small text control below the input, keeping non-default permission modes legible. The right side of this outside footer shows session Tokens, cached-input hit rate, subscription level, and only provider-reported remaining allowance windows. Unknown values use an em dash. Context capacity is never presented as account quota; full keyboard help stays available to assistive technology. Attachments, pending approvals, queued drafts and scheduled messages remain contextual rows. The textarea and mention highlight overlay must share identical font metrics and padding.
 
+Slash completion shares the composer menu surface: a flat list of neutral icons, command names and one-line descriptions, with no category badges or counts. The visible order is also the keyboard order. `/` searches commands and skills; `$` searches skills. Tab completes the token, Enter selects, and Escape returns to the draft. Anchor to the composer, opening below the central input or above a bottom input; track viewport and input resizing.
+
 The actions menu aligns left and fits narrow viewports. Menus open below the central composer when room permits and above the bottom composer; short viewports scroll the menu. Models appear first. Reasoning opens a separate menu view with Back navigation, translated effort labels and the selected option focused; model and effort lists never form nested scrolling regions. The selected effort is visible on mobile too. Scheduling replaces its contents in the same popup, with Back navigation; Escape closes and restores focus. Use arrow keys/Home/End to navigate menu controls. Keep invalid or past custom send times disabled and revalidate at submission.
 
 The empty composer is 104px tall on desktop and mobile. Use a one-row textarea with 24px line height, 16px top and 18px bottom padding; let content grow it naturally and shrink on clearing. Both the mention overlay and textarea use these metrics. The focused textarea has no independent outline or shadow; the outer form uses only a slight neutral border change, with no orange ring or added glow. Keep keyboard focus styling on action buttons.
@@ -73,3 +75,21 @@ The local demo reuses this visual system with optional account imagery: **DOhhhD
 Build with `npm run build:client`, then run `npm run demo` and open `http://localhost:3002`. Use `?theme=light` or `?theme=dark` for either theme and `?home=1` for the project home. Screenshots live in `docs/screenshots/demo/`; setup details are in [scripts/demo/README.md](scripts/demo/README.md).
 
 The separate fixture server keeps its state in memory and uses no real provider or account database. Chat replies, files, quotas and test output are fictional; terminal commands never execute. The demo bootstrap disables external browser fetches. This is a local screenshot extension of the existing app.
+
+## Direct access and profile
+
+Open the workspace without local sign-in or registration. Codex provider authorization remains a separate workflow. The sidebar account row opens Settings → Profile; it is a display identity, not an access-control account. Use the existing 28px avatar slot and single-line name.
+
+Profile uses ordinary settings sections: avatar upload, display name, explicit Save, automatic-profile reset, available Codex account details, and an optional setup guide. Manual overrides persist on the server and take precedence over current Codex display claims. No avatar/name claim means a default display, never invented account metadata. Uploads accept PNG/JPEG/WebP up to 1 MB.
+
+Secondary workflows use the shared focus-trapped Dialog, neutral theme surfaces, 12px corners, and a soft offset shadow. Nested dialogs handle Escape only at the topmost level and restore focus on close. Project creation, folder browsing, provider authorization, MCP forms, Git confirmations and version updates share this shell. Model/skill/plugin collections use quiet rows and separators; code, diff and status semantics remain intact.
+
+## Project files
+
+The Files page uses a project name/path header, separate labelled create/upload actions, and a search row with one neutral view selector. Default to the simple file list while retaining saved view preferences. Use 14px names, 36px desktop / 40px mobile rows, neutral file-type icons, tonal expanded folders, and quiet tree guides. Detailed columns remain aligned across nesting levels; on narrow screens the table scrolls horizontally to preserve names and metadata. Image previews and deletion confirmations use the shared dialog surface.
+
+## Terminal and session archive
+
+The terminal uses self-hosted Noto Sans Mono at 14px with 1.4 line height, native CJK fallbacks, a thin caret, and neutral selection. Keep ANSI status distinctions in a subdued palette and refit cells after fonts load. Its toolbar separates project path and session state from restart/disconnect actions; the canvas has 24px desktop and 16px mobile horizontal insets. Theme changes repaint the current terminal without reconnecting it.
+
+Session menus expose Archive as a separate, non-destructive action; permanent deletion continues to require confirmation. Keep the selected conversation’s menu visible. Running sessions reuse the conversation rows. Archive uses plain project headings and flat session rows with restore/delete controls visible on hover, keyboard focus, and touch. Empty states explain how content arrives without cards or decorative borders.

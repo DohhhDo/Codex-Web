@@ -171,16 +171,16 @@ test('CLI bootstrap selects Platform authentication and cloud runtime from .env'
   });
 });
 
-test('CLI bootstrap selects OSS authentication and local runtime from .env', async () => {
+test('CLI bootstrap uses direct workspace access with the local runtime from .env', async () => {
   const result = await runCliBootstrapFixture(false);
 
   assert.deepEqual(result, {
     command: 'status',
     environmentFileReads: 0,
     mode: 'false',
-    authNextCalled: false,
-    authStatus: 401,
-    authenticatedUsername: null,
+    authNextCalled: true,
+    authStatus: 200,
+    authenticatedUsername: 'bootstrap-user',
     runtime: 'local',
   });
 });

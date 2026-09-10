@@ -4,8 +4,11 @@ import path from 'node:path';
 
 import TOML from '@iarna/toml';
 
+import { codexAppServer } from '@/modules/providers/list/codex/codex-app-server.client.js';
+
 import type { IProviderModels } from '@/shared/interfaces.js';
 import type {
+  AnyRecord,
   ProviderCurrentActiveModel,
   ProviderModelsDefinition,
 } from '@/shared/types.js';
@@ -116,8 +119,46 @@ const CODEX_CONFIG_PATH = path.join(os.homedir(), '.codex', 'config.toml');
 
 /** Provider registry model adapter for Codex predefined models and active config. */
 export class CodexProviderModels implements IProviderModels {
+  private catalog: ProviderModelsDefinition | null = null;
+  private expiresAt = 0;
+  private discovery: Promise<ProviderModelsDefinition> | null = null;
+
   async getSupportedModels(): Promise<ProviderModelsDefinition> {
-    return CODEX_PREDEFINED_MODELS;
+    if (this.catalog && Date.now() < this.expiresAt) return this.catalog;
+    if (this.discovery) return this.discovery;
+    this.discovery = this.discoverModels();
+    try { return await this.discovery; } finally { this.discovery = null; }
+  }
+
+  private async discoverModels(): Promise<ProviderModelsDefinition> {
+    let client: Awaited<ReturnType<typeof codexAppServer.connect>> | null = null;
+    try {
+      client = await codexAppServer.connect();
+      const models: AnyRecord[] = [];
+      let cursor: string | undefined;
+      do {
+        const result = await client.call('model/list', { limit: 100, ...(cursor ? { cursor } : {}) });
+        models.push(...(result.data ?? []));
+        cursor = result.nextCursor || undefined;
+      } while (cursor);
+      const visible = models.filter((model) => !model.hidden && typeof model.model === 'string');
+      if (!visible.length) throw new Error('No native models available.');
+      this.catalog = {
+        OPTIONS: visible.map((model) => ({
+          value: model.model, label: model.displayName || model.model, description: model.description,
+          inputModalities: model.inputModalities,
+          effort: { default: model.defaultReasoningEffort, values: (model.supportedReasoningEfforts ?? []).map((option: AnyRecord) => ({ value: option.reasoningEffort, description: option.description })) },
+        })),
+        DEFAULT: visible.find((model) => model.isDefault)?.model ?? visible[0].model,
+      };
+      this.expiresAt = Date.now() + 60_000;
+      return this.catalog;
+    } catch {
+      // Offline startup retains a usable catalogue and retries discovery soon.
+      this.catalog ??= CODEX_PREDEFINED_MODELS;
+      this.expiresAt = Date.now() + 10_000;
+      return this.catalog;
+    } finally { client?.close(); }
   }
 
   async getCurrentActiveModel(): Promise<ProviderCurrentActiveModel> {

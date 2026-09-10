@@ -29,9 +29,9 @@ export default function OnboardingStepProgress({ currentStep }: OnboardingStepPr
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-200 ${
                     isCompleted
-                      ? 'border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                      ? 'border-emerald-500 bg-emerald-500 text-white shadow-none '
                       : isActive
-                        ? 'border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-none '
                         : 'border-border bg-card text-muted-foreground'
                   }`}
                 >
@@ -42,7 +42,7 @@ export default function OnboardingStepProgress({ currentStep }: OnboardingStepPr
                   <p className={`text-sm font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {t(step.titleKey)}
                   </p>
-                  {step.required && <span className="text-xs text-red-500">{t('onboarding.required')}</span>}
+
                 </div>
               </div>
 

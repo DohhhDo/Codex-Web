@@ -96,6 +96,23 @@ CREATE TABLE IF NOT EXISTS projects (
 );
 `;
 
+/** Persisted recurring tasks and their execution history, used by database migration. */
+export const AUTOMATIONS_TABLE_SCHEMA_SQL = `
+CREATE TABLE IF NOT EXISTS automations (
+ id TEXT PRIMARY KEY, user_id INTEGER NOT NULL, session_id TEXT NOT NULL,
+ content TEXT NOT NULL, options TEXT NOT NULL DEFAULT '{}',
+ interval_minutes INTEGER NOT NULL, next_run_at INTEGER NOT NULL,
+ enabled INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_automations_due ON automations(enabled, next_run_at);
+CREATE TABLE IF NOT EXISTS automation_runs (
+ id TEXT PRIMARY KEY, automation_id TEXT NOT NULL,
+ started_at INTEGER NOT NULL, completed_at INTEGER,
+ status TEXT NOT NULL, error TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_automation_runs_task ON automation_runs(automation_id, started_at);
+`;
+
 export const SCHEDULED_MESSAGES_TABLE_SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS scheduled_messages (
     id TEXT PRIMARY KEY,

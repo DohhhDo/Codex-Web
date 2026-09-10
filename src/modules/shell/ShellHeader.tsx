@@ -4,6 +4,7 @@ import { ShieldSlashIcon as ShieldOff } from '@phosphor-icons/react/dist/csr/Shi
 import { XIcon as X } from '@phosphor-icons/react/dist/csr/X';
 
 type ShellHeaderProps = {
+  projectPath: string;
   isConnected: boolean;
   isInitialized: boolean;
   isRestarting: boolean;
@@ -28,6 +29,7 @@ type ShellHeaderProps = {
 
 /** Rendered by Shell above the terminal to show connection status and the restart/disconnect actions. */
 export default function ShellHeader({
+  projectPath,
   isConnected,
   isInitialized,
   isRestarting,
@@ -50,10 +52,12 @@ export default function ShellHeader({
   bypassTitle,
 }: ShellHeaderProps) {
   return (
-    <div className="codex-terminal-toolbar flex-shrink-0 border-b border-border bg-background px-4 py-2">
+    <div className="codex-terminal-toolbar flex-shrink-0 border-b border-border/60 bg-background px-4 py-3 sm:px-6">
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+        <div className="min-w-0 flex-1">
+          <p className="mb-1.5 truncate text-xs text-muted-foreground" title={projectPath}>{projectPath}</p>
+          <div className="flex min-w-0 items-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-[#788c5d]' : 'bg-muted-foreground'}`} />
 
           {hasSession && sessionDisplayNameShort && (
             <span className="truncate text-xs text-muted-foreground" title={sessionDisplayNameShort}>{sessionDisplayNameShort}</span>
@@ -64,6 +68,7 @@ export default function ShellHeader({
           {!isInitialized && <span className="text-xs text-muted-foreground">{statusInitializingText}</span>}
 
           {isRestarting && <span className="text-xs text-muted-foreground">{statusRestartingText}</span>}
+          </div>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">

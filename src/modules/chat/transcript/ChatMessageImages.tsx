@@ -161,6 +161,7 @@ function ChatMessageImage({ image, projectId }: { image: ChatImage; projectId?: 
           className="h-28 w-28 cursor-zoom-in object-cover transition-transform duration-200 hover:scale-105"
         />
       </button>
+      <a href={src} download={image.name || 'image.png'} className="self-end rounded px-2 py-1 text-xs text-muted-foreground hover:bg-accent">{t('chat:codex.download', { defaultValue: 'Download' })}</a>
       {expanded && <ImageLightbox src={src} alt={alt} onClose={() => setExpanded(false)} />}
     </>
   );

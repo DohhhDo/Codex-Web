@@ -2,6 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownIcon } from '@phosphor-icons/react/dist/csr/ArrowDown';
 
+import { CodexArtifactsPanel } from '@/modules/chat/modals/CodexArtifactsPanel';
+import { CodexVoicePanel } from '@/modules/chat/modals/CodexVoicePanel';
+import { CodexAutomationPanel } from '@/modules/chat/modals/CodexAutomationPanel';
+import { CodexGoalBar } from '@/modules/chat/composer/CodexGoalBar';
+import { CodexFeaturePanel } from '@/modules/chat/modals/CodexFeaturePanel';
+
 import { useTasksSettings } from '@/modules/task-master';
 import { useWebSocket } from '@/shared/context/WebSocketContext';
 import PermissionContext from '@/modules/chat/context/PermissionContext';
@@ -188,8 +194,6 @@ function ChatInterface({
     isTextareaExpanded,
     slashCommandsCount,
     filteredCommands,
-    frequentCommands,
-    commandQuery,
     showCommandMenu,
     selectedCommandIndex,
     resetCommandMenuState,
@@ -225,6 +229,8 @@ function ChatInterface({
     handleInputFocusChange,
     isInputFocused,
     commandModalPayload,
+    codexPanel,
+    setCodexPanel,
     closeCommandModal,
     showCostModal,
     editingAnchorId,
@@ -237,6 +243,7 @@ function ChatInterface({
     provider,
     permissionMode,
     cyclePermissionMode,
+    selectPermissionMode,
     currentProviderModel,
     currentProviderEffort,
     isLoading: isProcessing,
@@ -244,6 +251,7 @@ function ChatInterface({
     canAbortSession,
     tokenBudget,
     sendMessage,
+    subscribe,
     sendByCtrlEnter,
     onSessionProcessing,
     onSessionEstablished: handleSessionEstablished,
@@ -280,6 +288,7 @@ function ChatInterface({
     selectedSession,
     currentSessionId,
     setTokenBudget,
+    onPermissionModeChange: selectPermissionMode,
     pendingPermissionRequests,
     setPendingPermissionRequests,
     streamTimerRef,
@@ -487,6 +496,11 @@ function ChatInterface({
             </div>
           )}
 
+          {provider === 'codex' && <CodexGoalBar sessionId={selectedSession?.id || currentSessionId} onResume={() => { const sessionId = selectedSession?.id || currentSessionId; if (!sessionId) return; if (isProcessing) sendMessage({ type: 'chat.control', sessionId, action: 'goal', input: { operation: 'resume' } }); else { onSessionProcessing?.(sessionId); sendMessage({ type: 'chat.send', sessionId, content: '/goal resume', options: { model: currentProviderModel, effort: currentProviderEffort, permissionMode } }); } }} />}
+          <CodexArtifactsPanel open={codexPanel === 'artifacts'} messages={chatMessages} onClose={() => setCodexPanel(null)} onOpen={onFileOpen} />
+          <CodexVoicePanel isBusy={isProcessing} open={codexPanel === 'voice'} sessionId={selectedSession?.id || currentSessionId} onClose={() => setCodexPanel(null)} onStart={(sdp) => { const sessionId = selectedSession?.id || currentSessionId; if (!sessionId) return; onSessionProcessing?.(sessionId); sendMessage({ type: 'chat.send', sessionId, content: '/voice', options: { model: currentProviderModel, effort: currentProviderEffort, permissionMode, realtimeSdp: sdp } }); }} />
+          <CodexAutomationPanel key={`${selectedSession?.id || currentSessionId}:${codexPanel === 'automations'}`} open={codexPanel === 'automations'} sessionId={selectedSession?.id || currentSessionId} options={{ model: currentProviderModel, effort: currentProviderEffort, permissionMode }} onClose={() => setCodexPanel(null)} />
+          <CodexFeaturePanel sessionId={selectedSession?.id || currentSessionId || undefined} kind={['automations', 'voice', 'artifacts'].includes(codexPanel ?? '') ? null : codexPanel} workspacePath={selectedProject?.fullPath || selectedProject?.path} onClose={() => setCodexPanel(null)} onInsert={(text) => handleVoiceTranscript(text)} />
           <ChatComposer
           pendingPermissionRequests={pendingPermissionRequests}
           handlePermissionDecision={handlePermissionDecision}
@@ -537,7 +551,6 @@ function ChatInterface({
           onCommandSelect={handleCommandSelect}
           onCloseCommandMenu={resetCommandMenuState}
           isCommandMenuOpen={showCommandMenu}
-          frequentCommands={commandQuery ? [] : frequentCommands}
           getRootProps={getRootProps as (...args: unknown[]) => Record<string, unknown>}
           getInputProps={getInputProps as (...args: unknown[]) => Record<string, unknown>}
           openAttachmentPicker={openAttachmentPicker}

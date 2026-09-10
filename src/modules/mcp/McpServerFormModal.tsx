@@ -4,6 +4,7 @@ import { XIcon as X } from '@phosphor-icons/react/dist/csr/X';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { Dialog, DialogContent } from '@/shared/ui';
 import { Button, Input } from '@/shared/ui';
 import { MCP_PROVIDER_NAMES, MCP_SUPPORTED_SCOPES, MCP_SUPPORTED_TRANSPORTS, MCP_SUPPORTS_WORKING_DIRECTORY } from '@/shared/constants';
 import { useMcpServerForm } from '@/modules/mcp/hooks/useMcpServerForm';
@@ -108,8 +109,8 @@ export default function McpServerFormModal({
   const showCodexOnlyFields = provider === 'codex' && !isGlobalMode;
 
   return createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-background">
+    <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent wrapperClassName="z-[10000]" aria-label={modalTitle} className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-background">
         <div className="flex items-center justify-between border-b border-border p-4">
           <h3 className="text-lg font-medium text-foreground">{modalTitle}</h3>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -131,8 +132,8 @@ export default function McpServerFormModal({
                 onClick={() => updateForm('importMode', 'form')}
                 className={`rounded-lg px-4 py-2 font-medium transition-colors ${
                   formData.importMode === 'form'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-foreground hover:bg-accent dark:bg-secondary dark:text-muted-foreground dark:hover:bg-accent'
                 }`}
               >
                 {t('mcpForm.importMode.form')}
@@ -142,8 +143,8 @@ export default function McpServerFormModal({
                 onClick={() => updateForm('importMode', 'json')}
                 className={`rounded-lg px-4 py-2 font-medium transition-colors ${
                   formData.importMode === 'json'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-foreground hover:bg-accent dark:bg-secondary dark:text-muted-foreground dark:hover:bg-accent'
                 }`}
               >
                 {t('mcpForm.importMode.json')}
@@ -152,7 +153,7 @@ export default function McpServerFormModal({
           )}
 
           {isEditing && (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50">
+            <div className="rounded-lg border border-border bg-background p-3 dark:border-border dark:bg-background/50">
               <label className="mb-2 block text-sm font-medium text-foreground">
                 {t('mcpForm.scope.label')}
               </label>
@@ -181,8 +182,8 @@ export default function McpServerFormModal({
                       onClick={() => updateScope(scope)}
                       className={`rounded-lg px-4 py-2 font-medium transition-colors ${
                         formData.scope === scope
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-secondary text-foreground hover:bg-accent dark:bg-secondary dark:text-muted-foreground dark:hover:bg-accent'
                       }`}
                     >
                       <div className="flex items-center justify-center gap-2">
@@ -203,7 +204,7 @@ export default function McpServerFormModal({
                   <select
                     value={formData.workspacePath}
                     onChange={(event) => updateForm('workspacePath', event.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-border focus:ring-ring dark:border-border dark:bg-secondary dark:text-foreground"
                     required
                   >
                     <option value="">{t('mcpForm.fields.selectProject')}</option>
@@ -244,7 +245,7 @@ export default function McpServerFormModal({
                 <select
                   value={formData.transport}
                   onChange={(event) => updateTransport(event.target.value as McpFormState['transport'])}
-                  className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-border focus:ring-ring dark:border-border dark:bg-secondary dark:text-foreground"
                 >
                   {availableTransports.map((transport) => (
                     <option key={transport} value={transport}>
@@ -265,8 +266,8 @@ export default function McpServerFormModal({
                 value={formData.jsonInput}
                 onChange={(event) => updateJsonInput(event.target.value)}
                 className={`w-full border px-3 py-2 ${
-                  jsonValidationError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                } rounded-lg bg-gray-50 font-mono text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100`}
+                  jsonValidationError ? 'border-red-500' : 'border-border dark:border-border'
+                } rounded-lg bg-background font-mono text-sm text-foreground focus:border-border focus:ring-ring dark:bg-secondary dark:text-foreground`}
                 rows={8}
                 placeholder={'{\n  "type": "stdio",\n  "command": "npx",\n  "args": ["@upstash/context7-mcp"]\n}'}
                 required
@@ -305,7 +306,7 @@ export default function McpServerFormModal({
                 <textarea
                   value={multilineText.args}
                   onChange={(event) => updateMultilineText('args', event.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-border focus:ring-ring dark:border-border dark:bg-secondary dark:text-foreground"
                   rows={3}
                   placeholder="--port&#10;3000"
                 />
@@ -349,7 +350,7 @@ export default function McpServerFormModal({
               <textarea
                 value={multilineText.env}
                 onChange={(event) => updateMultilineText('env', event.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-border focus:ring-ring dark:border-border dark:bg-secondary dark:text-foreground"
                 rows={3}
                 placeholder="API_KEY=your-key&#10;DEBUG=true"
               />
@@ -364,7 +365,7 @@ export default function McpServerFormModal({
               <textarea
                 value={multilineText.headers}
                 onChange={(event) => updateMultilineText('headers', event.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-border focus:ring-ring dark:border-border dark:bg-secondary dark:text-foreground"
                 rows={3}
                 placeholder="Authorization=Bearer token&#10;X-API-Key=your-key"
               />
@@ -379,7 +380,7 @@ export default function McpServerFormModal({
               <textarea
                 value={multilineText.envVars}
                 onChange={(event) => updateMultilineText('envVars', event.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus:border-border focus:ring-ring dark:border-border dark:bg-secondary dark:text-foreground"
                 rows={3}
                 placeholder="GITHUB_TOKEN&#10;API_KEY"
               />
@@ -416,8 +417,8 @@ export default function McpServerFormModal({
             </Button>
           </div>
         </form>
-      </div>
-    </div>,
+      </DialogContent>
+    </Dialog>,
     document.body,
   );
 }

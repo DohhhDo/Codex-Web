@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useTheme } from '@/shared/context/ThemeContext';
 import { cn } from '@/shared/utils';
 import { ensurePrdExtension } from '@/modules/prd-editor/utils/fileName';
 import GenerateTasksModal from '@/modules/prd-editor/modals/GenerateTasksModal';
@@ -36,7 +37,7 @@ export default function PrdEditorWorkspace({
   loadError,
 }: PrdEditorWorkspaceProps) {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [previewMode, setPreviewMode] = useState<boolean>(false);
   const [wordWrap, setWordWrap] = useState<boolean>(true);
   const [showGenerateModal, setShowGenerateModal] = useState<boolean>(false);
@@ -59,8 +60,8 @@ export default function PrdEditorWorkspace({
     >
       <div
         className={cn(
-          'bg-white dark:bg-gray-900 shadow-2xl flex flex-col',
-          'w-full h-full md:rounded-lg md:shadow-2xl',
+          'bg-background shadow-none flex flex-col',
+          'w-full h-full md:rounded-lg md:shadow-none',
           isFullscreen
             ? 'md:w-full md:h-full md:rounded-none'
             : 'md:w-full md:max-w-6xl md:h-[85vh] md:max-h-[85vh]',
@@ -81,7 +82,7 @@ export default function PrdEditorWorkspace({
           wordWrap={wordWrap}
           onToggleWordWrap={() => setWordWrap((current) => !current)}
           isDarkMode={isDarkMode}
-          onToggleTheme={() => setIsDarkMode((current) => !current)}
+          onToggleTheme={toggleDarkMode}
           onDownload={onDownload}
           onOpenGenerateTasks={handleOpenGenerateTasks}
           canGenerateTasks={Boolean(content.trim())}

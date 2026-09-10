@@ -134,7 +134,10 @@
       "refresh": "刷新",
       "menuLabel": "文件上下文菜单",
       "loading": "加载中..."
-    }
+    },
+    "viewMode": "文件显示方式",
+    "imageLoading": "正在加载图片…",
+    "imageLoadFailed": "无法加载图片"
   },
   "projectWizard": {
     "title": "创建新项目",

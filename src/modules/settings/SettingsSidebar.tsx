@@ -1,3 +1,4 @@
+import { UserCircleIcon } from '@phosphor-icons/react/dist/csr/UserCircle';
 import { BellIcon as Bell } from '@phosphor-icons/react/dist/csr/Bell';
 import { RobotIcon as Bot } from '@phosphor-icons/react/dist/csr/Robot';
 import { GitBranchIcon as GitBranch } from '@phosphor-icons/react/dist/csr/GitBranch';
@@ -26,6 +27,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
+  { id: 'profile', labelKey: 'profile.title', icon: UserCircleIcon },
   { id: 'agents', labelKey: 'mainTabs.agents', icon: Bot },
   { id: 'appearance', labelKey: 'mainTabs.appearance', icon: Palette },
   { id: 'git', labelKey: 'mainTabs.git', icon: GitBranch },

@@ -3,7 +3,8 @@ import { XIcon as X } from '@phosphor-icons/react/dist/csr/X';
 import { useTranslation } from 'react-i18next';
 
 import { ProviderLoginModal } from '@/modules/provider-auth';
-import { Button } from '@/shared/ui';
+import { Button, Dialog, DialogContent } from '@/shared/ui';
+import ProfileSettingsTab from '@/modules/settings/tabs/ProfileSettingsTab';
 import SettingsSidebar from '@/modules/settings/SettingsSidebar';
 import AgentsSettingsTab from '@/modules/settings/tabs/agents-settings/AgentsSettingsTab';
 import AppearanceSettingsTab from '@/modules/settings/tabs/AppearanceSettingsTab';
@@ -35,7 +36,7 @@ type DesktopNotificationsState = {
 };
 
 /** Exported as the settings module's public entry point and rendered by the sidebar module as its settings dialog. */
-function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: SettingsProps) {
+export default function Settings({ isOpen, onClose, projects = [], initialTab = 'profile' }: SettingsProps) {
   const { t } = useTranslation('settings');
   const desktopNotificationsBridge = useMemo(() => (
     typeof window === 'undefined'
@@ -142,8 +143,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
   const isAuthenticated = Boolean(loginProvider && providerAuthStatus[loginProvider].authenticated);
 
   return (
-    <div className="modal-backdrop fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 md:p-4">
-      <div className="codex-settings flex h-full w-full flex-col overflow-hidden border border-border shadow-2xl md:h-[90vh] md:rounded-xl">
+    <>
+      <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent wrapperClassName="z-[80]" aria-label={t('title')} className="codex-settings flex h-[90dvh] w-full max-w-[1100px] flex-col overflow-hidden border border-border md:rounded-xl">
         {/* Header */}
         <div className="codex-settings-header flex flex-shrink-0 items-center justify-between border-b border-border px-4 py-3 md:px-5">
           <h2 className="text-base font-semibold text-foreground">{t('title')}</h2>
@@ -168,8 +170,9 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
           <SettingsSidebar activeTab={activeTab} onChange={setActiveTab} />
 
           {/* Content */}
-          <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <main className="codex-settings-main min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
             <div key={activeTab} className="codex-settings-content settings-content-enter min-w-0 space-y-6 overflow-x-hidden p-4 pb-safe-area-inset-bottom md:space-y-8 md:p-6">
+              {activeTab === 'profile' && <ProfileSettingsTab />}
               {activeTab === 'appearance' && (
                 <AppearanceSettingsTab
                   projectSortOrder={projectSortOrder}
@@ -228,7 +231,8 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
             </div>
           </main>
         </div>
-      </div>
+      </DialogContent>
+      </Dialog>
 
       <ProviderLoginModal
         key={loginProvider || 'claude'}
@@ -239,8 +243,6 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
         isAuthenticated={isAuthenticated}
       />
 
-    </div>
+    </>
   );
 }
-
-export default Settings;

@@ -116,11 +116,11 @@ export default function GithubCredentialsSection({
           <p className="text-sm italic text-muted-foreground">{t('apiKeys.github.empty')}</p>
         ) : (
           githubCredentials.map((credential) => (
-            <div key={credential.id} className="flex items-center justify-between rounded-lg border p-3">
-              <div className="flex-1">
+            <div key={credential.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-4">
+              <div className="min-w-0 flex-1">
                 <div className="font-medium">{credential.credential_name}</div>
                 {credential.description && (
-                  <div className="text-xs text-muted-foreground">{credential.description}</div>
+                  <div className="break-all text-xs text-muted-foreground">{credential.description}</div>
                 )}
                 <div className="mt-1 text-xs text-muted-foreground">
                   {t('apiKeys.github.added')} {new Date(credential.created_at).toLocaleDateString()}

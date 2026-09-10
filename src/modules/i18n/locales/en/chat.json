@@ -86,22 +86,74 @@
     "resetAt": "Claude usage limit reached. Your limit will reset at **{{time}} {{timezone}}** - {{date}}"
   },
   "codex": {
-    "permissionMode": "Permission Mode",
-    "modes": {
-      "default": "Default Mode",
-      "auto": "Auto Mode",
-      "acceptEdits": "Accept Edits",
-      "bypassPermissions": "Bypass Permissions",
-      "plan": "Plan Mode"
+    "pause": "Pause",
+    "resume": "Resume",
+    "clear": "Clear",
+    "close": "Close",
+    "search": "Search",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "empty": "No available items",
+    "use": "Use",
+    "connect": "Connect",
+    "skills": "Skills",
+    "apps": "Apps",
+    "mcp": "MCP tools",
+    "needsInput": "Your input is needed",
+    "goalStatus": {
+      "active": "Working toward goal",
+      "paused": "Paused",
+      "blocked": "Needs input",
+      "usageLimited": "Usage limit reached",
+      "budgetLimited": "Token budget reached",
+      "complete": "Complete"
     },
-    "descriptions": {
-      "default": "Only trusted commands (ls, cat, grep, git status, etc.) run automatically. Other commands are skipped. Can write to workspace.",
-      "auto": "A model classifier decides per tool call whether to approve or deny. Hands-off, but safer than Bypass — denials still happen.",
-      "acceptEdits": "All commands run automatically within the workspace. Full auto mode with sandboxed execution.",
-      "bypassPermissions": "Full system access with no restrictions. All commands run automatically with full disk and network access. Use with caution.",
-      "plan": "Planning mode - no commands are executed"
+    "openLink": "Open authorization page",
+    "unsupportedForm": "This form contains unsupported fields. Decline and ask the tool for another way to continue.",
+    "choose": "Choose…",
+    "yes": "Yes",
+    "no": "No",
+    "decline": "Decline",
+    "confirm": "Confirm",
+    "automations": "Automations",
+    "loadFailed": "Could not load tasks.",
+    "saveFailed": "Could not save task.",
+    "sessionRequired": "Start a conversation before scheduling tasks.",
+    "taskPrompt": "Task instructions",
+    "interval": "Repeat every (minutes)",
+    "create": "Create task",
+    "save": "Save",
+    "edit": "Edit",
+    "history": "Run history",
+    "delete": "Delete",
+    "noRuns": "No runs yet.",
+    "automationHint": "Runs while the server is available. Busy sessions wait. Missed intervals are combined into one run.",
+    "runStatus": {
+      "running": "Running",
+      "completed": "Completed",
+      "failed": "Failed",
+      "interrupted": "Interrupted"
     },
-    "technicalDetails": "Technical details"
+    "voice": "Realtime voice",
+    "startVoice": "Start voice",
+    "stopVoice": "End voice",
+    "voiceFailed": "Voice connection failed.",
+    "audioPlayback": "Press Play to hear the response.",
+    "voiceState": {
+      "idle": "Talk with Codex using your microphone. Availability depends on your Codex account.",
+      "connecting": "Connecting…",
+      "connected": "Listening — speak naturally."
+    },
+    "artifacts": "Artifacts",
+    "artifactHint": "Open a file to preview, edit or download it. HTML previews run in an isolated frame.",
+    "image": "Generate or edit an image using an installed skill",
+    "research": "Research with an installed deep-research skill",
+    "browser": "Run a browser task using an installed skill",
+    "model": "Choose a model",
+    "context": "Inspect context usage",
+    "agents": "Subagents",
+    "stopAgent": "Stop agent",
+    "voiceBusy": "Wait for the current task to finish before starting voice."
   },
   "voice": {
     "input": "Voice input",
@@ -139,8 +191,19 @@
     }
   },
   "composer": {
-    "effortLevels": {"none": "None", "minimal": "Minimal", "low": "Low", "medium": "Medium", "high": "High", "xhigh": "Extra high", "max": "Maximum"},
-
+    "commands": {
+      "label": "Commands and skills",
+      "empty": "No matching commands or skills"
+    },
+    "effortLevels": {
+      "none": "None",
+      "minimal": "Minimal",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "xhigh": "Extra high",
+      "max": "Maximum"
+    },
     "reasoning": "Reasoning",
     "model": "Model",
     "effortDefault": "Default",
@@ -333,9 +396,26 @@
       "models": "Browse available models for the active provider.",
       "cost": "Review token usage for the active session.",
       "status": "Inspect runtime, version, provider, and environment status.",
-      "memory": "Open the project CLAUDE.md memory file.",
+      "memory": "Open project instructions",
       "config": "Open settings and configuration.",
-      "help": "Show command documentation and syntax."
+      "help": "Show command documentation and syntax.",
+      "plan": "Plan before making changes",
+      "goal": "Set a goal · status, pause, resume, clear",
+      "review": "Review changes",
+      "compact": "Compact conversation context",
+      "steer": "Send instructions to the running turn",
+      "skills": "Skills",
+      "apps": "Apps",
+      "mcp": "MCP tools",
+      "automations": "Automations",
+      "voice": "Realtime voice",
+      "artifacts": "Artifacts",
+      "image": "Generate or edit an image using an installed skill",
+      "research": "Research with an installed deep-research skill",
+      "browser": "Run a browser task using an installed skill",
+      "model": "Choose a model",
+      "context": "Inspect context usage",
+      "agents": "Subagents"
     },
     "modalMeta": {
       "helpEyebrow": "Command center",
@@ -361,5 +441,28 @@
     "tokensLabel_other": "tokens",
     "escClosesModal": "Esc closes the modal.",
     "close": "Close"
+  },
+  "modelLibrary": {
+    "title": "Model library",
+    "description": "Add model IDs supported by your provider. Built-in models stay locked.",
+    "back": "Back to models",
+    "name": "Model name",
+    "id": "Model ID",
+    "idHelp": "Use the exact identifier accepted by the provider CLI. IDs cannot contain spaces.",
+    "customTitle": "Your models",
+    "customDescription": "Editable and stored in auth.db",
+    "emptyTitle": "No custom models yet",
+    "emptyDescription": "Add one with the form and it will appear in every model picker.",
+    "builtIn": "Built-in models",
+    "builtInDescription": "Provider catalogue · read-only",
+    "custom": "Custom",
+    "deleteConfirm": "Delete this model from all pickers?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit custom model",
+    "add": "Add model",
+    "saving": "Saving…",
+    "save": "Save changes",
+    "sentAsWritten": "The ID is sent to {{provider}} exactly as written."
   }
 }

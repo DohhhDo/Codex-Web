@@ -1374,6 +1374,11 @@ async function getCodexSessionMessages(sessionId: string): Promise<CodexHistoryR
       continue;
     }
 
+    if (payload.type === 'image_generation_call' && payload.status === 'completed' && typeof payload.result === 'string') {
+      messages.push({ uuid: payload.id, type: 'assistant', timestamp, message: { role: 'assistant', content: payload.revised_prompt ?? '' }, images: [{ data: `data:image/png;base64,${payload.result}`, name: `generated-${payload.id}.png` }] });
+      continue;
+    }
+
     if (payload.type === 'reasoning') {
       const summaryText = Array.isArray(payload.summary)
         ? payload.summary.map((item: AnyRecord) => item?.text).filter(Boolean).join('\n')
@@ -1955,7 +1960,7 @@ export class CodexSessionsProvider implements IProviderSessions {
             .filter(Boolean)
             .join('\n')
           : '';
-      if (!content.trim()) {
+      if (!content.trim() && !raw.images?.length && !raw.files?.length) {
         return [];
       }
       return [createNormalizedMessage({
@@ -1966,6 +1971,8 @@ export class CodexSessionsProvider implements IProviderSessions {
         kind: 'text',
         role: 'assistant',
         content,
+        images: raw.images,
+        files: raw.files,
         memoryCitations: raw.memoryCitations,
       })];
     }

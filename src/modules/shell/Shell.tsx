@@ -296,6 +296,7 @@ export default function Shell({
   return (
     <div className="codex-terminal flex h-full min-h-0 w-full min-w-0 flex-col bg-background">
       <ShellHeader
+        projectPath={selectedProject.fullPath || selectedProject.path || selectedProject.displayName}
         isConnected={isConnected}
         isInitialized={isInitialized}
         isRestarting={isRestarting}
@@ -320,7 +321,7 @@ export default function Shell({
         )}
       />
 
-      <div className="codex-terminal-body relative min-h-0 flex-1 overflow-hidden p-3">
+      <div className="codex-terminal-body relative min-h-0 flex-1 overflow-hidden px-4 py-5 sm:px-6 sm:py-6">
         <div
           ref={terminalContainerRef}
           className="h-full w-full focus:outline-none"

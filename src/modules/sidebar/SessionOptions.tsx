@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
+import { ArchiveIcon as Archive } from '@phosphor-icons/react/dist/csr/Archive';
 import { CheckIcon as Check } from '@phosphor-icons/react/dist/csr/Check';
 import { PencilSimpleIcon as Edit2 } from '@phosphor-icons/react/dist/csr/PencilSimple';
 import { GitBranchIcon as GitBranch } from '@phosphor-icons/react/dist/csr/GitBranch';
@@ -32,7 +33,7 @@ type SessionOptionsProps = {
   onStartEditingSession: (projectId: string, sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
   onSaveEditingSession: (projectId: string, sessionId: string, summary: string, provider: LLMProvider) => void;
-  onDeleteSession: (sessionId: string, sessionTitle: string) => void;
+  onDeleteSession: (sessionId: string, sessionTitle: string, options?: { archiveOnly?: boolean }) => void;
   /** Bound by the caller, which owns the session object the fork needs. */
   onFork?: () => void;
   /** Withheld where the row has nowhere to send a delete. */
@@ -150,8 +151,8 @@ export default function SessionOptions({
         </>
       ) : (
         <ActionMenu
-          label="Session options"
-          ariaLabel={`Session options for ${sessionName}`}
+          label={t('sessions.options', 'Session options')}
+          ariaLabel={t('sessions.optionsFor', { defaultValue: 'Session options for {{name}}', name: sessionName })}
           icon={MoreHorizontal}
           iconOnly
           portal
@@ -172,7 +173,7 @@ export default function SessionOptions({
           items={[
             ...(projectId !== null ? [{
               key: 'rename',
-              label: 'Rename session',
+              label: t('sessions.rename', 'Rename session'),
               icon: Edit2,
               onSelect: () => onStartEditingSession(projectId, sessionId, sessionName),
             }] : []),
@@ -187,17 +188,22 @@ export default function SessionOptions({
             },
             ...(canFork && onFork ? [{
               key: 'fork',
-              label: 'Fork session',
-              description: 'Continue from a copy, leaving this one untouched.',
+              label: t('sessions.fork', 'Fork session'),
+              description: t('sessions.forkDescription', 'Continue from a copy.'),
               icon: GitBranch,
               onSelect: onFork,
             }] : []),
             ...(canDelete && !isProcessing ? [{
+              key: 'archive',
+              label: t('sessions.archive', 'Archive session'),
+              icon: Archive,
+              showDividerBefore: true,
+              onSelect: () => onDeleteSession(sessionId, sessionName, { archiveOnly: true }),
+            }, {
               key: 'delete',
-              label: 'Archive or delete session',
+              label: t('sessions.delete', 'Delete session'),
               icon: Trash2,
               isDanger: true,
-              showDividerBefore: true,
               onSelect: () => onDeleteSession(sessionId, sessionName),
             }] : []),
           ]}

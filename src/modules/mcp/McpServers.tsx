@@ -1,17 +1,14 @@
-import { PencilLineIcon as Edit3 } from '@phosphor-icons/react/dist/csr/PencilLine';
-import { ArrowSquareOutIcon as ExternalLink } from '@phosphor-icons/react/dist/csr/ArrowSquareOut';
-import { GlobeHemisphereWestIcon as Globe } from '@phosphor-icons/react/dist/csr/GlobeHemisphereWest';
 import { LockSimpleIcon as Lock } from '@phosphor-icons/react/dist/csr/LockSimple';
+import { PencilLineIcon as Edit3 } from '@phosphor-icons/react/dist/csr/PencilLine';
+import { GlobeHemisphereWestIcon as Globe } from '@phosphor-icons/react/dist/csr/GlobeHemisphereWest';
 import { PlusIcon as Plus } from '@phosphor-icons/react/dist/csr/Plus';
 import { HardDrivesIcon as Server } from '@phosphor-icons/react/dist/csr/HardDrives';
 import { TerminalIcon as Terminal } from '@phosphor-icons/react/dist/csr/Terminal';
 import { TrashIcon as Trash2 } from '@phosphor-icons/react/dist/csr/Trash';
-import { UsersIcon as Users } from '@phosphor-icons/react/dist/csr/Users';
 import { LightningIcon as Zap } from '@phosphor-icons/react/dist/csr/Lightning';
 import { useTranslation } from 'react-i18next';
 
 import type { McpProject, McpProvider, McpScope, ProviderMcpServer } from '@/shared/types';
-import { IS_PLATFORM } from '@/shared/utils';
 import { ActionMenu, Badge, Button } from '@/shared/ui';
 import { MCP_GLOBAL_SUPPORTED_TRANSPORTS, MCP_PROVIDER_NAMES } from '@/shared/constants';
 import { useMcpServers } from '@/modules/mcp/hooks/useMcpServers';
@@ -82,36 +79,7 @@ function ConfigLine({ label, children }: { label: string; children: string }) {
   );
 }
 
-function TeamMcpFeatureCard() {
-  const { t } = useTranslation('settings');
-  return (
-    <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-5">
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground">
-          <Users className="h-5 w-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-sm font-medium text-foreground">{t('mcpTeamCard.title')}</h4>
-            <Lock className="h-3 w-3 text-muted-foreground/60" />
-          </div>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {t('mcpTeamCard.description')}
-          </p>
-          <a
-            href="https://cloudcli.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:underline"
-          >
-            {t('mcpTeamCard.proLink')}
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 /** Rendered by the settings module's agents tab to list and manage one provider's MCP servers. */
 export default function McpServers({ selectedProvider, currentProjects }: McpServersProps) {
@@ -146,7 +114,7 @@ export default function McpServers({ selectedProvider, currentProjects }: McpSer
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
-          <Server className="mt-0.5 h-5 w-5 flex-shrink-0 text-purple-500" />
+          <Server className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
             <h3 className="text-lg font-medium text-foreground">{t('mcpServers.title')}</h3>
             <p className="text-sm text-muted-foreground">{description}</p>
@@ -252,7 +220,7 @@ export default function McpServers({ selectedProvider, currentProjects }: McpSer
                     {managed && (
                       <div className="text-xs text-muted-foreground">
                         {t('mcpServers.managed.hint', {
-                          defaultValue: 'Managed by CloudCLI.',
+                          defaultValue: 'Managed by Codex-Web.',
                         })}
                       </div>
                     )}
@@ -298,7 +266,7 @@ export default function McpServers({ selectedProvider, currentProjects }: McpSer
         </div>
       )}
 
-      {selectedProvider === 'claude' && !IS_PLATFORM && <TeamMcpFeatureCard />}
+
 
       {/* Mounted only while open: each instance runs a full useMcpServerForm. */}
       {serverForm?.scope === 'provider' && (

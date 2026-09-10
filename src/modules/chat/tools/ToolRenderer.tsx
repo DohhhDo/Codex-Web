@@ -7,6 +7,7 @@ import { OneLineDisplay } from '@/modules/chat/tools/OneLineDisplay';
 import { BashCommandDisplay } from '@/modules/chat/tools/BashCommandDisplay';
 import { CollapsibleDisplay } from '@/modules/chat/tools/CollapsibleDisplay';
 import { ToolDiffViewer } from '@/modules/chat/tools/ToolDiffViewer';
+import { WebSearchContent } from '@/modules/chat/tools/ContentRenderers/WebSearchContent';
 import { MarkdownContent } from '@/modules/chat/tools/ContentRenderers/MarkdownContent';
 import { FileListContent } from '@/modules/chat/tools/ContentRenderers/FileListContent';
 import { TodoListContent } from '@/modules/chat/tools/ContentRenderers/TodoListContent';
@@ -58,6 +59,8 @@ function deriveToolStatus(toolResult: any, reportedStatus?: string): ToolStatus 
   // while its output is still streaming in rather than only once it finishes.
   if (reportedStatus === 'in_progress') return 'running';
   if (reportedStatus === 'failed') return 'error';
+  if (reportedStatus === 'completed') return 'completed';
+  if (reportedStatus === 'declined') return 'denied';
   if (!toolResult) return 'running';
   if (toolResult.isError) {
     const content = String(toolResult.content || '').toLowerCase().trim();
@@ -227,6 +230,10 @@ export const ToolRenderer: React.FC<ToolRendererProps> = memo(({
             />
           );
         }
+        break;
+
+      case 'web-search':
+        contentComponent = <WebSearchContent content={contentProps.content || ''} />;
         break;
 
       case 'markdown':

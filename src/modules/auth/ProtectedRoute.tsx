@@ -1,43 +1,20 @@
 import type { ReactNode } from 'react';
-
-import { IS_PLATFORM } from '@/shared/utils';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/modules/auth/context/AuthContext';
-import { Onboarding } from '@/modules/onboarding';
 import AuthLoadingScreen from '@/modules/auth/AuthLoadingScreen';
-import LoginForm from '@/modules/auth/LoginForm';
-import SetupForm from '@/modules/auth/SetupForm';
+import { Button } from '@/shared/ui';
 
-type ProtectedRouteProps = {
-  children: ReactNode;
-};
-
-/** Used by App to gate the routed application behind setup, login and onboarding. */
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading, needsSetup, hasCompletedOnboarding, refreshOnboardingStatus } = useAuth();
-
-  if (isLoading) {
-    return <AuthLoadingScreen />;
-  }
-
-  if (IS_PLATFORM) {
-    if (!hasCompletedOnboarding) {
-      return <Onboarding onComplete={refreshOnboardingStatus} />;
-    }
-
-    return <>{children}</>;
-  }
-
-  if (needsSetup) {
-    return <SetupForm />;
-  }
-
-  if (!user) {
-    return <LoginForm />;
-  }
-
-  if (!hasCompletedOnboarding) {
-    return <Onboarding onComplete={refreshOnboardingStatus} />;
-  }
-
+/** Used by App to wait for workspace bootstrap; local login and onboarding never gate entry. */
+export default function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { t } = useTranslation('settings');
+  const { user, isLoading, refreshProfile } = useAuth();
+  if (isLoading) return <AuthLoadingScreen />;
+  if (!user) return (
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6 text-center">
+      <h1 className="codex-wordmark">Codex-Web</h1>
+      <p role="alert" className="text-sm text-muted-foreground">{t('profile.workspaceUnavailable')}</p>
+      <Button onClick={() => { void refreshProfile().catch(() => {}); }}>{t('profile.retry')}</Button>
+    </main>
+  );
   return <>{children}</>;
 }

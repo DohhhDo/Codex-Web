@@ -32,7 +32,14 @@
     "loadingSessions": "Loading sessions...",
     "unnamed": "Unnamed",
     "loading": "Loading...",
-    "showMore": "Show more sessions"
+    "showMore": "Show more sessions",
+    "options": "Session options",
+    "optionsFor": "Session options for {{name}}",
+    "rename": "Rename session",
+    "fork": "Fork session",
+    "forkDescription": "Continue from a copy.",
+    "archive": "Archive session",
+    "delete": "Delete session"
   },
   "tooltips": {
     "viewEnvironments": "View Environments",
@@ -160,5 +167,22 @@
     "deleteAllData": "Delete all data permanently",
     "allConversationsDeleted": "The project will be removed from the sidebar. Your files, memories, and session data will be preserved.",
     "cannotUndo": "You can re-add the project later."
+  },
+  "archived": {
+    "loadingTitle": "Loading archive…",
+    "noMatchingSessions": "No matching archived items",
+    "emptyTitle": "No archived conversations",
+    "tryDifferentSearch": "Try another search term.",
+    "emptyDescription": "Choose Archive session from a conversation’s menu to keep its history here.",
+    "restoreHint": "Your history is preserved. Restore a conversation at any time.",
+    "restore": "Restore session",
+    "deletePermanently": "Delete permanently",
+    "restoreProject": "Restore project",
+    "restoreAction": "Restore"
+  },
+  "running": {
+    "emptyTitle": "No sessions running",
+    "noMatchingSessions": "No running sessions match this search.",
+    "emptyDescription": "Conversations appear here while Codex is working."
   }
 }

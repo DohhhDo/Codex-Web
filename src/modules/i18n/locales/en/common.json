@@ -135,7 +135,10 @@
       "refresh": "Refresh",
       "menuLabel": "File context menu",
       "loading": "Loading..."
-    }
+    },
+    "viewMode": "File view",
+    "imageLoading": "Loading image…",
+    "imageLoadFailed": "Unable to load image"
   },
   "projectWizard": {
     "title": "Create New Project",

@@ -770,29 +770,7 @@ export function useSidebarController({
     [paletteOps],
   );
 
-  const showDeleteSessionConfirmation = useCallback(
-    (
-      sessionId: string,
-      sessionTitle: string,
-      options: { isArchived?: boolean } = {},
-    ) => {
-      setPendingDeletion({
-        kind: 'session',
-        sessionId,
-        sessionTitle,
-        isArchived: Boolean(options.isArchived),
-      });
-    },
-    [],
-  );
-
-  const confirmDeleteSession = useCallback(async (hardDelete = false) => {
-    if (pendingDeletion?.kind !== 'session') {
-      return;
-    }
-
-    const { sessionId } = pendingDeletion;
-    setPendingDeletion(null);
+  const deleteOrArchiveSession = useCallback(async (sessionId: string, hardDelete = false) => {
 
     try {
       const response = await api.deleteSession(sessionId, hardDelete);
@@ -822,7 +800,34 @@ export function useSidebarController({
       console.error('[Sidebar] Error deleting session:', error);
       alert(t('messages.deleteSessionError'));
     }
-  }, [fetchArchivedSessions, onSessionDelete, pendingDeletion, t]);
+  }, [fetchArchivedSessions, onSessionDelete, t]);
+
+  const showDeleteSessionConfirmation = useCallback(
+    (
+      sessionId: string,
+      sessionTitle: string,
+      options: { isArchived?: boolean; archiveOnly?: boolean } = {},
+    ) => {
+      if (options.archiveOnly) {
+        void deleteOrArchiveSession(sessionId);
+        return;
+      }
+      setPendingDeletion({
+        kind: 'session',
+        sessionId,
+        sessionTitle,
+        isArchived: Boolean(options.isArchived),
+      });
+    },
+    [deleteOrArchiveSession],
+  );
+
+  const confirmDeleteSession = useCallback(async (hardDelete = false) => {
+    if (pendingDeletion?.kind !== 'session') return;
+    const { sessionId } = pendingDeletion;
+    setPendingDeletion(null);
+    await deleteOrArchiveSession(sessionId, hardDelete);
+  }, [deleteOrArchiveSession, pendingDeletion]);
 
   const requestProjectDelete = useCallback(
     (project: Project) => {

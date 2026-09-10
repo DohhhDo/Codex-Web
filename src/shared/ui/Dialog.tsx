@@ -7,6 +7,7 @@ type DialogContextValue = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   triggerRef: React.MutableRefObject<HTMLElement | null>;
+  titleId: string;
 };
 
 const DialogContext = React.createContext<DialogContextValue | null>(null);
@@ -24,9 +25,11 @@ type DialogProps = {
   children: React.ReactNode;
 };
 
-/** Used by the chat, command-palette, sidebar and skills modules as the modal container. */
+/** Used by the chat, command-palette, sidebar, file-tree and skills modules as the modal container. */
 export const Dialog: React.FC<DialogProps> = ({ open: controlledOpen, onOpenChange: controlledOnOpenChange, defaultOpen = false, children }) => {
+  // Uncontrolled consumers need local visibility; controlled dialogs use their owner state.
   const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+  const titleId = React.useId();
   const triggerRef = React.useRef<HTMLElement | null>(null) as React.MutableRefObject<HTMLElement | null>;
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
@@ -38,7 +41,7 @@ export const Dialog: React.FC<DialogProps> = ({ open: controlledOpen, onOpenChan
     [isControlled, controlledOnOpenChange]
   );
 
-  const value = React.useMemo(() => ({ open, onOpenChange, triggerRef }), [open, onOpenChange]);
+  const value = React.useMemo(() => ({ open, onOpenChange, triggerRef, titleId }), [open, onOpenChange, titleId]);
 
   return <DialogContext.Provider value={value}>{children}</DialogContext.Provider>;
 };
@@ -98,33 +101,46 @@ type DialogContentProps = {
   animationClassName?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
+// Only the topmost dialog handles keyboard input when a settings subdialog opens.
+const dialogStack: symbol[] = [];
+let bodyOverflowBeforeDialogs = '';
+
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/** Focus-trapped panel of Dialog, used by the chat, command-palette, sidebar and skills modules. */
+/** Focus-trapped panel of Dialog, used by the chat, command-palette, sidebar, file-tree and skills modules. */
 export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className, children, onEscapeKeyDown, onPointerDownOutside, wrapperClassName, animationClassName, ...props }, ref) => {
-    const { open, onOpenChange, triggerRef } = useDialog();
+    const { open, onOpenChange, triggerRef, titleId } = useDialog();
     const contentRef = React.useRef<HTMLDivElement | null>(null);
+    const dialogId = React.useRef(Symbol());
     const previousFocusRef = React.useRef<HTMLElement | null>(null);
 
-    // Save the element that had focus before opening, restore on close
     React.useEffect(() => {
-      if (open) {
-        previousFocusRef.current = document.activeElement as HTMLElement;
-      } else if (previousFocusRef.current) {
-        // Prefer the trigger, fall back to whatever was focused before
-        const restoreTarget = triggerRef.current || previousFocusRef.current;
-        restoreTarget?.focus();
-        previousFocusRef.current = null;
+      if (!open) return;
+      const id = dialogId.current;
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      if (dialogStack.length === 0) {
+        bodyOverflowBeforeDialogs = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
       }
+      dialogStack.push(id);
+      return () => {
+        const index = dialogStack.indexOf(id);
+        if (index !== -1) dialogStack.splice(index, 1);
+        if (!dialogStack.length) document.body.style.overflow = bodyOverflowBeforeDialogs;
+        const target = triggerRef.current || previousFocusRef.current;
+        if (target?.isConnected) target.focus();
+      };
     }, [open, triggerRef]);
 
     React.useEffect(() => {
       if (!open) return;
 
       const handleKeyDown = (e: KeyboardEvent) => {
+        if (dialogStack.at(-1) !== dialogId.current) return;
         if (e.key === 'Escape') {
           e.stopPropagation();
+          e.stopImmediatePropagation();
           onEscapeKeyDown?.();
           onOpenChange(false);
           return;
@@ -152,13 +168,8 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
 
       document.addEventListener('keydown', handleKeyDown, true);
 
-      // Prevent body scroll
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-
       return () => {
         document.removeEventListener('keydown', handleKeyDown, true);
-        document.body.style.overflow = prev;
       };
     }, [open, onOpenChange, onEscapeKeyDown]);
 
@@ -179,7 +190,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
       <div className={cn('fixed inset-0 z-50', wrapperClassName)}>
         {/* Overlay */}
         <div
-          className="fixed inset-0 animate-dialog-overlay-show bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 animate-dialog-overlay-show bg-black/50"
           onClick={() => {
             onPointerDownOutside?.();
             onOpenChange(false);
@@ -195,9 +206,10 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
           }}
           role="dialog"
           aria-modal="true"
+          aria-labelledby={props['aria-label'] ? undefined : titleId}
           className={cn(
             'fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2',
-            'rounded-xl border bg-popover text-popover-foreground shadow-lg',
+            'codex-dialog rounded-xl border bg-popover text-popover-foreground',
             animationClassName ?? 'animate-dialog-content-show',
             className
           )}
@@ -212,11 +224,12 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
 );
 DialogContent.displayName = 'DialogContent';
 
-/** Accessible title of Dialog, used by the chat, command-palette, sidebar and skills modules. */
+/** Accessible title of Dialog, used by the chat, command-palette, sidebar, file-tree and skills modules. */
 export const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h2 ref={ref} className={cn('sr-only', className)} {...props} />
-  )
+  ({ className, ...props }, ref) => {
+    const { titleId } = useDialog();
+    return <h2 id={titleId} ref={ref} className={cn('sr-only', className)} {...props} />;
+  }
 );
 DialogTitle.displayName = 'DialogTitle';
 

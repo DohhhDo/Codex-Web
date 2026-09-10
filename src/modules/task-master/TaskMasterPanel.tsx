@@ -140,7 +140,7 @@ export default function TaskMasterPanel({ isVisible }: TaskMasterPanelProps) {
 
       {prdNotification && (
         <div className="animate-in slide-in-from-bottom-2 fixed bottom-4 right-4 z-50 duration-300">
-          <div className="flex items-center gap-3 rounded-lg bg-green-600 px-4 py-3 text-white shadow-lg">
+          <div className="flex items-center gap-3 rounded-lg bg-green-600 px-4 py-3 text-white shadow-none">
             <CheckIcon className="h-5 w-5" aria-hidden />
             <span className="font-medium">{prdNotification}</span>
           </div>

@@ -4,6 +4,7 @@
 @font-face { font-family: Poppins; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/poppins-500.woff2') format('woff2'); }
 @font-face { font-family: Poppins; font-style: normal; font-weight: 600 900; font-display: swap; src: url('/fonts/poppins-600.woff2') format('woff2'); }
 @font-face { font-family: Lora; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/lora.woff2') format('woff2'); }
+@font-face { font-family: "Codex Terminal Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/noto-sans-mono.woff2") format("woff2"); }
 :root {
   --codex-sidebar: #f0eee6;
   --codex-settings: #faf9f5;
@@ -196,7 +197,9 @@ h1, h2, h3 { font-family: var(--codex-ui-font); }
   .codex-settings { max-width: 1100px; width: calc(100vw - 80px); }
   .codex-settings-header { position: absolute; top: 12px; right: 16px; z-index: 1; padding: 0; border: 0; }
   .codex-settings-header > h2 { display: none; }
-  .codex-settings-content { padding: 28px 32px; }
+  /* Keep the close control outside the scrolling content and its actions. */
+  .codex-settings-main { margin-top: 64px; }
+  .codex-settings-content { padding: 0 32px 28px; }
 }
 @media (max-width: 767px) {
   .codex-welcome-title { gap: 10px; }
@@ -210,8 +213,8 @@ h1, h2, h3 { font-family: var(--codex-ui-font); }
 .codex-conversation-link:hover, .codex-conversation-link.is-selected { color: hsl(var(--foreground)); background: hsl(var(--accent)); }
 .codex-conversation-status { display: flex; width: 14px; height: 16px; flex-shrink: 0; align-items: center; justify-content: center; color: hsl(var(--muted-foreground)); }
 .codex-conversation-dot { width: 6px; height: 6px; border: 1px solid hsl(var(--muted-foreground) / .4); border-radius: 50%; }
-.codex-session-options { opacity: 0; pointer-events: none; background: var(--codex-sidebar); border-radius: 6px; }
-.codex-conversation-row:hover .codex-session-options, .codex-conversation-row:focus-within .codex-session-options, .codex-session-options:has([aria-expanded=true]), .codex-session-options.is-editing { opacity: 1; pointer-events: auto; }
+.codex-session-options { z-index: 1; opacity: 0; pointer-events: none; background: var(--codex-sidebar); border-radius: 6px; }
+.codex-conversation-row:has([aria-current=page]) .codex-session-options, .codex-conversation-row:hover .codex-session-options, .codex-conversation-row:focus-within .codex-session-options, .codex-session-options:has([aria-expanded=true]), .codex-session-options.is-editing { opacity: 1; pointer-events: auto; }
 .codex-conversation-row:hover .codex-session-options { background: hsl(var(--accent)); }
 .codex-conversation-row:has(.codex-session-options.is-editing) .codex-conversation-link { visibility: hidden; }
 .codex-session-options.is-editing { left: 8px; }
@@ -239,3 +242,25 @@ h1, h2, h3 { font-family: var(--codex-ui-font); }
 .codex-usage-footer { display: flex; flex: 1; min-width: 180px; max-width: 100%; justify-content: flex-end; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding-block: 4px; color: hsl(var(--muted-foreground)); font-size: 11px; line-height: 18px; font-variant-numeric: tabular-nums; }
 .codex-usage-footer > * { white-space: nowrap; }
 @media (max-width: 767px) { .codex-usage-footer { gap: 2px 8px; font-size: 10px; } }
+
+/* Secondary workflows share the same quiet surfaces as the composer menus. */
+.codex-dialog { max-height: calc(100dvh - 32px); width: calc(100vw - 32px); border-color: hsl(var(--border)); background: hsl(var(--popover)); color: hsl(var(--foreground)); border-radius: 12px; box-shadow: 0 12px 40px rgb(0 0 0 / .18); }
+.codex-dialog input:not([type=checkbox]):not([type=radio]), .codex-dialog textarea, .codex-dialog select { border-color: hsl(var(--border)); background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
+.codex-dialog :is(input, textarea, select)::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.codex-dialog :is(button, a, input, select, textarea):focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.codex-dialog h2, .codex-dialog h3 { font-size: 18px; font-weight: 500; line-height: 1.4; }
+.codex-dialog pre { max-width: 100%; overflow: auto; }
+.codex-onboarding { max-height: calc(100dvh - 48px); border-radius: inherit; }
+@media (max-width: 767px) {
+  .codex-dialog { max-height: calc(100dvh - 16px); max-width: calc(100vw - 16px); }
+  .codex-dialog button { min-height: 40px; }
+  .codex-dialog :is(input:not([type=checkbox]):not([type=radio]), select, textarea) { font-size: 16px; }
+}
+
+.codex-dialog[role="dialog"] { background: hsl(var(--popover)); }
+.codex-dialog.codex-settings { position: fixed; background: var(--codex-settings); }
+.codex-dialog .bg-primary { color: hsl(var(--primary-foreground)); box-shadow: none; }
+
+.codex-settings h3 { font-size: 16px; }
+
+.codex-conversation-row .codex-conversation-link { padding-right: 36px; }

@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { api } from '@/shared/api';
 import { safeLocalStorage } from '@/modules/chat/utils/chatStorage';
 import type { LLMProvider, Project, SlashCommand } from '@/shared/types';
-
-const COMMAND_QUERY_DEBOUNCE_MS = 150;
 
 
 type UseSlashCommandsOptions = {
@@ -58,7 +57,7 @@ const isPromiseLike = (value: unknown): value is Promise<unknown> =>
   Boolean(value) && typeof (value as Promise<unknown>).then === 'function';
 
 const isSkillCommand = (command: SlashCommand) =>
-  command.type === 'skill' || command.metadata?.type === 'skill';
+  command.type === 'skill' || command.namespace === 'skill' || command.metadata?.type === 'skill';
 
 const dedupeProviderSkills = (skills: ProviderSkill[]): ProviderSkill[] => {
   const seenCommands = new Set<string>();
@@ -96,36 +95,19 @@ const filterSlashCommands = (
   commands: SlashCommand[],
   query: string,
 ): SlashCommand[] => {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) {
-    return commands;
-  }
-
-  const commandPrefix = normalizedQuery.startsWith('/')
-    ? normalizedQuery
-    : `/${normalizedQuery}`;
-  const namePrefixMatches = commands.filter((command) =>
-    command.name.toLowerCase().startsWith(commandPrefix),
-  );
-
-  // Namespaced commands should behave like path completion. Once a provider
-  // namespace is typed, only exact command-prefix matches should stay visible.
-  if (normalizedQuery.includes(':') || namePrefixMatches.length > 0) {
-    return namePrefixMatches;
-  }
-
-  const nameSubstringMatches = commands.filter((command) =>
-    command.name.toLowerCase().includes(normalizedQuery),
-  );
-  if (nameSubstringMatches.length > 0) {
-    return nameSubstringMatches;
-  }
-
-  return commands.filter((command) =>
-    command.description?.toLowerCase().includes(normalizedQuery),
-  );
+  const normalizedQuery = query.trim().toLowerCase().replace(/^[/$]/, '');
+  const candidates = query.startsWith('$') ? commands.filter(isSkillCommand) : commands;
+  if (!normalizedQuery) return candidates;
+  const nameOf = (command: SlashCommand) => command.name.toLowerCase().replace(/^[/$]/, '');
+  const prefixMatches = candidates.filter((command) => nameOf(command).startsWith(normalizedQuery));
+  // Namespaced commands retain exact prefix completion rather than unrelated results.
+  if (normalizedQuery.includes(':')) return prefixMatches;
+  const substringMatches = candidates.filter((command) => !nameOf(command).startsWith(normalizedQuery) && nameOf(command).includes(normalizedQuery));
+  const descriptionMatches = candidates.filter((command) => !nameOf(command).includes(normalizedQuery) && command.description?.toLowerCase().includes(normalizedQuery));
+  return [...prefixMatches, ...substringMatches, ...descriptionMatches];
 };
 
+/** Used by useChatComposerState to discover, filter and select commands without leaving the draft. */
 export function useSlashCommands({
   selectedProject,
   provider,
@@ -134,51 +116,59 @@ export function useSlashCommands({
   textareaRef,
   onExecuteCommand,
 }: UseSlashCommandsOptions) {
+  const { t } = useTranslation('chat');
+  // The available commands are loaded for the active project and provider.
   const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
-  const [filteredCommands, setFilteredCommands] = useState<SlashCommand[]>([]);
+  // Visibility also supports opening from the + menu without typing a trigger.
   const [showCommandMenu, setShowCommandMenu] = useState(false);
+  // Retain the trigger so $ restricts discovery to skills while / includes commands.
   const [commandQuery, setCommandQuery] = useState('');
-  const [selectedCommandIndex, setSelectedCommandIndex] = useState(-1);
+  // One index drives both the highlighted row and keyboard selection.
+  const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
+  // Remember which token to replace when completing inside a longer draft.
   const [slashPosition, setSlashPosition] = useState(-1);
 
-  const commandQueryTimerRef = useRef<number | null>(null);
-
-  const clearCommandQueryTimer = useCallback(() => {
-    if (commandQueryTimerRef.current !== null) {
-      window.clearTimeout(commandQueryTimerRef.current);
-      commandQueryTimerRef.current = null;
-    }
-  }, []);
+  const filteredCommands = useMemo(() => {
+    const localizedCommands = slashCommands.map((command) => command.type === 'built-in' ? {
+      ...command,
+      description: t(`misc.fallbackCommands.${command.name.replace(/^\//, '')}`, { defaultValue: command.description ?? '' }),
+    } : command);
+    return filterSlashCommands(localizedCommands, commandQuery);
+  }, [slashCommands, commandQuery, t]);
 
   const resetCommandMenuState = useCallback(() => {
     setShowCommandMenu(false);
     setSlashPosition(-1);
     setCommandQuery('');
-    setSelectedCommandIndex(-1);
-    clearCommandQueryTimer();
-  }, [clearCommandQueryTimer]);
+    setSelectedCommandIndex(0);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchCommands = async () => {
+      setSlashCommands([]);
+      resetCommandMenuState();
       if (!selectedProject) {
         setSlashCommands([]);
-        setFilteredCommands([]);
         return;
       }
 
       try {
         const workspacePath = selectedProject.fullPath || selectedProject.path || '';
-        const response = await api.commands.list(workspacePath || selectedProject.path);
+        const response = await api.commands.list(workspacePath || selectedProject.path, provider);
 
         if (!response.ok) {
           throw new Error('Failed to fetch commands');
         }
 
         const data = await response.json();
-        const skillsResponse = await api.providers.skills(provider, { workspacePath });
-        const skillsData = skillsResponse.ok
+        if (!cancelled) setSlashCommands([
+          ...(data.builtIn ?? []).map((command: SlashCommand) => ({ ...command, type: 'built-in' })),
+          ...(data.custom ?? []).map((command: SlashCommand) => ({ ...command, type: 'custom' })),
+        ]);
+        const skillsResponse = await api.providers.skills(provider, { workspacePath }).catch(() => null);
+        const skillsData = skillsResponse?.ok
           ? ((await skillsResponse.json()) as ProviderSkillsResponse)
           : null;
         const skillCommands = dedupeProviderSkills(skillsData?.data?.skills || [])
@@ -217,34 +207,7 @@ export function useSlashCommands({
     return () => {
       cancelled = true;
     };
-  }, [selectedProject, provider]);
-
-  useEffect(() => {
-    if (!showCommandMenu) {
-      setSelectedCommandIndex(-1);
-    }
-  }, [showCommandMenu]);
-
-  useEffect(() => {
-    setFilteredCommands(filterSlashCommands(slashCommands, commandQuery));
-  }, [commandQuery, slashCommands]);
-
-  const frequentCommands = useMemo(() => {
-    if (!selectedProject || slashCommands.length === 0) {
-      return [];
-    }
-
-    const parsedHistory = readCommandHistory(selectedProject.projectId);
-
-    return slashCommands
-      .map((command) => ({
-        ...command,
-        usageCount: parsedHistory[command.name] || 0,
-      }))
-      .filter((command) => command.usageCount > 0)
-      .sort((commandA, commandB) => commandB.usageCount - commandA.usageCount)
-      .slice(0, 5);
-  }, [selectedProject, slashCommands]);
+  }, [selectedProject, provider, resetCommandMenuState]);
 
   const trackCommandUsage = useCallback(
     (command: SlashCommand) => {
@@ -266,13 +229,10 @@ export function useSlashCommands({
         ? slashPosition
         : currentTextarea?.selectionStart ?? input.length;
       const textBeforeCommand = input.slice(0, insertionStart);
-      const textAfterCommandStart = input.slice(insertionStart);
-      const spaceIndex = textAfterCommandStart.indexOf(' ');
-      const textAfterCommand = slashPosition >= 0 && spaceIndex !== -1
-        ? textAfterCommandStart.slice(spaceIndex).trimStart()
-        : input.slice(currentTextarea?.selectionEnd ?? insertionStart);
+      const tokenLength = slashPosition >= 0 ? (input.slice(insertionStart).match(/^[/$]\S*/)?.[0].length ?? 0) : 0;
+      const textAfterCommand = input.slice(slashPosition >= 0 ? insertionStart + tokenLength : currentTextarea?.selectionEnd ?? insertionStart);
       const separator = textBeforeCommand && !/\s$/.test(textBeforeCommand) ? ' ' : '';
-      const newInput = `${textBeforeCommand}${separator}${command.name}${textAfterCommand ? ` ${textAfterCommand}` : ' '}`;
+      const newInput = `${textBeforeCommand}${separator}${command.name}${textAfterCommand && /^\s/.test(textAfterCommand) ? textAfterCommand : ` ${textAfterCommand}`}`;
 
       setInput(newInput);
       resetCommandMenuState();
@@ -308,14 +268,15 @@ export function useSlashCommands({
 
   const selectCommandFromKeyboard = useCallback(
     (command: SlashCommand) => {
-      if (isSkillCommand(command)) {
+      trackCommandUsage(command);
+      if (isSkillCommand(command) || command.metadata?.acceptsArguments) {
         insertCommandIntoInput(command);
         return;
       }
 
       executeNonSkillCommand(command);
     },
-    [executeNonSkillCommand, insertCommandIntoInput],
+    [executeNonSkillCommand, insertCommandIntoInput, trackCommandUsage],
   );
 
   const handleCommandSelect = useCallback(
@@ -330,7 +291,7 @@ export function useSlashCommands({
       }
 
       trackCommandUsage(command);
-      if (isSkillCommand(command)) {
+      if (isSkillCommand(command) || command.metadata?.acceptsArguments) {
         insertCommandIntoInput(command);
         return;
       }
@@ -344,14 +305,11 @@ export function useSlashCommands({
     const isOpening = !showCommandMenu;
     setShowCommandMenu(isOpening);
     setCommandQuery('');
-    setSelectedCommandIndex(-1);
-
-    if (isOpening) {
-      setFilteredCommands(slashCommands);
-    }
+    setSelectedCommandIndex(0);
+    setSlashPosition(-1);
 
     textareaRef.current?.focus();
-  }, [showCommandMenu, slashCommands, textareaRef]);
+  }, [showCommandMenu, textareaRef]);
 
   const handleCommandInputChange = useCallback(
     (newValue: string, cursorPos: number) => {
@@ -369,8 +327,8 @@ export function useSlashCommands({
         return;
       }
 
-      // Match / at start of input OR after whitespace, capturing the /word up to cursor.
-      const slashPattern = /(?:^|\s)(\/\S*)$/;
+      // Trigger at word boundaries; URLs and fenced code remain ordinary draft text.
+      const slashPattern = /(?:^|\s)([/$]\S*)$/;
       const match = textBeforeCursor.match(slashPattern);
 
       if (!match) {
@@ -380,22 +338,20 @@ export function useSlashCommands({
 
       // Compute actual position of / in the full input string.
       const slashPos = match.index! + (match[0].length - match[1].length);
-      const query = match[1].slice(1); // strip leading /
+      const query = match[1];
 
       setSlashPosition(slashPos);
       setShowCommandMenu(true);
-      setSelectedCommandIndex(-1);
-
-      clearCommandQueryTimer();
-      commandQueryTimerRef.current = window.setTimeout(() => {
-        setCommandQuery(query);
-      }, COMMAND_QUERY_DEBOUNCE_MS);
+      setSelectedCommandIndex(0);
+      setCommandQuery(query);
     },
-    [resetCommandMenuState, clearCommandQueryTimer],
+    [resetCommandMenuState],
   );
 
   const handleCommandMenuKeyDown = useCallback(
     (event: KeyboardEvent<HTMLTextAreaElement>): boolean => {
+      // IME confirmation belongs to the textarea, never to command selection.
+      if (event.nativeEvent?.isComposing || event.keyCode === 229) return true;
       if (!showCommandMenu) {
         return false;
       }
@@ -425,12 +381,14 @@ export function useSlashCommands({
         return true;
       }
 
-      if (event.key === 'Tab' || event.key === 'Enter') {
+      if ((event.key === 'Tab' && !event.shiftKey) || (event.key === 'Enter' && !event.shiftKey)) {
         event.preventDefault();
-        if (selectedCommandIndex >= 0) {
-          selectCommandFromKeyboard(filteredCommands[selectedCommandIndex]);
-        } else if (filteredCommands.length > 0) {
-          selectCommandFromKeyboard(filteredCommands[0]);
+        const command = filteredCommands[selectedCommandIndex] ?? filteredCommands[0];
+        if (event.key === 'Tab') {
+          trackCommandUsage(command);
+          insertCommandIntoInput(command);
+        } else {
+          selectCommandFromKeyboard(command);
         }
         return true;
       }
@@ -443,22 +401,13 @@ export function useSlashCommands({
 
       return false;
     },
-    [showCommandMenu, filteredCommands, resetCommandMenuState, selectCommandFromKeyboard, selectedCommandIndex],
-  );
-
-  useEffect(
-    () => () => {
-      clearCommandQueryTimer();
-    },
-    [clearCommandQueryTimer],
+    [showCommandMenu, filteredCommands, resetCommandMenuState, selectCommandFromKeyboard, selectedCommandIndex, trackCommandUsage, insertCommandIntoInput],
   );
 
   return {
     slashCommands,
     slashCommandsCount: slashCommands.length,
     filteredCommands,
-    frequentCommands,
-    commandQuery,
     showCommandMenu,
     selectedCommandIndex,
     resetCommandMenuState,

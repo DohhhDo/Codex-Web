@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { ArchiveIcon as Archive } from '@phosphor-icons/react/dist/csr/Archive';
 import { CheckIcon as Check } from '@phosphor-icons/react/dist/csr/Check';
 import { PencilSimpleIcon as Edit2 } from '@phosphor-icons/react/dist/csr/PencilSimple';
 import { SpinnerGapIcon as Loader2 } from '@phosphor-icons/react/dist/csr/SpinnerGap';
@@ -31,7 +32,7 @@ type SidebarSessionItemProps = {
   onSaveEditingSession: (projectName: string, sessionId: string, summary: string, provider: LLMProvider) => void;
   onProjectSelect: (project: Project) => void;
   onSessionSelect: (session: SessionWithProvider, projectName: string) => void;
-  onDeleteSession: (sessionId: string, sessionTitle: string) => void;
+  onDeleteSession: (sessionId: string, sessionTitle: string, options?: { archiveOnly?: boolean }) => void;
   /** Branches this session into an independent one; absent when its provider cannot. */
   onForkSession?: (session: SessionWithProvider) => void;
   t: TFunction;
@@ -295,6 +296,16 @@ function SidebarSessionItem({
                 </button>
 
                 {!isProcessing && (
+                  <button type="button" onClick={() => {
+                    setMobileOptionsOpen(false);
+                    onDeleteSession(session.id, sessionView.sessionName, { archiveOnly: true });
+                  }} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-foreground transition-colors active:bg-accent">
+                    <Archive className="h-5 w-5 flex-shrink-0" />
+                    <span className="text-sm font-medium">{t('sessions.archive', 'Archive session')}</span>
+                  </button>
+                )}
+
+                {!isProcessing && (
                   <button
                     type="button"
                     onClick={() => {
@@ -304,7 +315,7 @@ function SidebarSessionItem({
                     className="flex min-h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-red-600 transition-colors active:bg-red-500/10 dark:text-red-400"
                   >
                     <Trash2 className="h-5 w-5 flex-shrink-0" />
-                    <span className="text-sm font-medium">Archive or delete session</span>
+                    <span className="text-sm font-medium">{t('sessions.delete', 'Delete session')}</span>
                   </button>
                 )}
               </div>

@@ -66,7 +66,7 @@ const SCOPE_BADGE_CLASSES: Record<SkillsScope, string> = {
   repo: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
   project: 'border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-300',
   admin: 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300',
-  system: 'border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300',
+  system: 'border-border/30 bg-accent/10 text-foreground dark:text-muted-foreground',
 };
 
 const SCOPE_ORDER: SkillsScope[] = ['user', 'plugin', 'repo', 'project', 'admin', 'system'];
@@ -443,7 +443,7 @@ export default function ProviderSkills({ selectedProvider, currentProjects }: Pr
             {queuedFiles.map((queuedFile) => (
               <div
                 key={queuedFile.id}
-                className="flex items-center gap-3 rounded-lg border border-border/70 bg-background/70 px-3 py-2"
+                className="flex items-center gap-3 rounded-lg border border-border/70 bg-background px-3 py-2"
               >
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-muted/60 text-muted-foreground">
                   {queuedFile.kind === 'folder' ? <FolderUp className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
@@ -689,7 +689,7 @@ export default function ProviderSkills({ selectedProvider, currentProjects }: Pr
               <Badge variant="outline" className={cn('rounded-full px-2.5 py-1 text-xs', SCOPE_BADGE_CLASSES[group.scope])}>
                 {t(`skillsPage.scopes.${group.scope}`)}
               </Badge>
-              <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="text-xs tracking-normal text-muted-foreground">
                 {t('skillsPage.count', { count: group.skills.length })}
               </span>
             </div>
@@ -698,7 +698,7 @@ export default function ProviderSkills({ selectedProvider, currentProjects }: Pr
               {group.skills.map((skill) => (
                 <div
                   key={`${skill.command}:${skill.sourcePath}:${skill.projectPath || 'global'}`}
-                  className="min-w-0 rounded-lg border border-border bg-card/50 p-4"
+                  className="min-w-0 border-b border-border py-4"
                 >
                   <div className="min-w-0 space-y-1">
                     <div className="break-all font-mono text-sm font-semibold text-foreground">{skill.command}</div>
@@ -711,19 +711,19 @@ export default function ProviderSkills({ selectedProvider, currentProjects }: Pr
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     {skill.pluginName && (
-                      <Badge variant="outline" className="rounded-full bg-background/70">
+                      <Badge variant="outline" className="rounded-full bg-background">
                         {t('skillsPage.pluginBadge', { name: skill.pluginName })}
                       </Badge>
                     )}
                     {skill.projectDisplayName && (
-                      <Badge variant="outline" className="rounded-full bg-background/70">
+                      <Badge variant="outline" className="rounded-full bg-background">
                         {t('skillsPage.projectBadge', { name: skill.projectDisplayName })}
                       </Badge>
                     )}
                   </div>
 
                   <div className="mt-4 min-w-0 rounded-lg border border-border/60 bg-muted/20 px-3 py-2">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{t('skillsPage.source')}</div>
+                    <div className="text-[11px] font-medium tracking-normal text-muted-foreground">{t('skillsPage.source')}</div>
                     <code className="mt-1 block whitespace-normal break-all text-xs text-foreground">{skill.sourcePath}</code>
                   </div>
                 </div>

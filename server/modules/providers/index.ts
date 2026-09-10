@@ -12,3 +12,6 @@ export { sessionsService } from './services/sessions.service.js';
 
 export { initializeSessionsWatcher } from './services/sessions-watcher.service.js';
 export { closeSessionsWatcher } from './services/sessions-watcher.service.js';
+
+// Used by the workspace profile service to read optional Codex display claims.
+export { providerAuthService } from './services/provider-auth.service.js';

@@ -6,6 +6,8 @@
  * users for forward compatibility.
  */
 
+import { randomUUID } from 'node:crypto';
+
 import { getConnection } from '@/modules/database/connection.js';
 
 type UserRow = {
@@ -37,6 +39,16 @@ type CreateUserResult = {
 // ---------------------------------------------------------------------------
 
 export const userDb = {
+  /** Used by auth to retain the existing owner's data without an interactive login. */
+  getWorkspaceUser(): UserPublicRow {
+    return getConnection().transaction(() => {
+      const existing = userDb.getFirstUser();
+      if (existing) return existing;
+      const created = userDb.createUser(`workspace-${randomUUID()}`, '!login-disabled');
+      return userDb.getUserById(Number(created.id))!;
+    })();
+  },
+
   /** Returns true if at least one user exists in the database. */
   hasUsers(): boolean {
     const db = getConnection();
@@ -94,7 +106,7 @@ export const userDb = {
     const db = getConnection();
     return db
       .prepare(
-        'SELECT id, username, created_at, last_login FROM users WHERE is_active = 1 LIMIT 1'
+        'SELECT id, username, created_at, last_login FROM users WHERE is_active = 1 ORDER BY id LIMIT 1'
       )
       .get() as UserPublicRow | undefined;
   },

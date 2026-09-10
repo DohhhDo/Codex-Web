@@ -82,13 +82,13 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
   }, []);
 
   const buildAnswers = useCallback(() => {
-    const answers: Record<string, string> = {};
+    const answers: Record<string, string | string[]> = {};
     questions.forEach((q, idx) => {
       const selected = Array.from(selections.get(idx) || []);
       const isOther = otherActive.get(idx) || false;
       const otherText = (otherTexts.get(idx) || '').trim();
       if (isOther && otherText) selected.push(otherText);
-      if (selected.length > 0) answers[q.question] = selected.join(', ');
+      if (selected.length > 0) answers[q.id ?? q.question] = q.id ? selected : selected.join(', ');
     });
     return answers;
   }, [questions, selections, otherActive, otherTexts]);
@@ -120,7 +120,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
     }
 
     // 0 for "Other"
-    if (e.key === '0') {
+    if (e.key === '0' && (q.isOther !== false || q.options.length === 0)) {
       e.preventDefault();
       toggleOther(currentStep, multi);
       return;
@@ -129,6 +129,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
     // Enter to advance / submit
     if (e.key === 'Enter') {
       e.preventDefault();
+      if (!(selections.get(currentStep)?.size || (otherActive.get(currentStep) && otherTexts.get(currentStep)?.trim()))) return;
       const isLast = currentStep === questions.length - 1;
       if (isLast) handleSubmit();
       else setCurrentStep(s => s + 1);
@@ -141,7 +142,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
       handleSkip();
       return;
     }
-  }, [currentStep, questions, toggleOption, toggleOther, handleSubmit, handleSkip]);
+  }, [currentStep, questions, selections, otherActive, otherTexts, toggleOption, toggleOther, handleSubmit, handleSkip]);
 
   if (questions.length === 0) return null;
 
@@ -181,7 +182,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
 
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                Claude needs your input
+                {t('chat:codex.needsInput', { defaultValue: 'Your input is needed' })}
               </span>
               {q.header && (
                 <span className="inline-flex items-center rounded border border-blue-100 bg-blue-50 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider text-blue-600 dark:border-blue-800/50 dark:bg-blue-900/30 dark:text-blue-400">
@@ -280,7 +281,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
             })}
 
             {/* "Other" option */}
-            <button
+            {(q.isOther !== false || q.options.length === 0) && <button
               type="button"
               onClick={() => toggleOther(currentStep, multi)}
               className={`group flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-all duration-150 ${
@@ -306,7 +307,7 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
               {isOtherOn && (
                 <CheckIcon className="ml-auto h-4 w-4 flex-shrink-0 text-blue-500 dark:text-blue-400" aria-hidden />
               )}
-            </button>
+            </button>}
 
             {/* Other text input — inline */}
             {isOtherOn && (
@@ -314,7 +315,9 @@ export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
                 <div className="relative">
                   <input
                     ref={otherInputRef}
-                    type="text"
+                    type={q.isSecret ? 'password' : 'text'}
+                    autoComplete="off"
+                    aria-label={q.question}
                     value={otherTexts.get(currentStep) || ''}
                     onChange={(e) => setOtherText(currentStep, e.target.value)}
                     onKeyDown={(e) => {

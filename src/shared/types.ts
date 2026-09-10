@@ -9,6 +9,8 @@ export type LLMProvider = 'claude' | 'cursor' | 'codex' | 'opencode';
 
 /** One selectable model in a provider's model menu, including its optional reasoning-effort choices. */
 export type ProviderModelOption = {
+  /** Modalities reported by native model discovery, absent for fallback entries. */
+  inputModalities?: string[];
   value: string;
   label: string;
   description?: string;
@@ -357,6 +359,9 @@ export type PendingPermissionRequest = {
 
 /** One question asked by the AskUserQuestion tool, with its answer options and whether more than one option may be selected. */
 export type Question = {
+  id?: string;
+  isOther?: boolean;
+  isSecret?: boolean;
   question: string;
   header?: string;
   options: QuestionOption[];
@@ -1129,7 +1134,7 @@ export type AgentContext = {
 };
 
 /** Identifier of a top-level section in the settings dialog; use it whenever a tab is stored, compared or requested so deep links, the sidebar and the command palette all agree on the same set of names. */
-export type SettingsMainTab = 'agents' | 'appearance' | 'git' | 'api' | 'voice' | 'tasks' | 'browser' | 'notifications' | 'plugins' | 'about';
+export type SettingsMainTab = 'profile' | 'agents' | 'appearance' | 'git' | 'api' | 'voice' | 'tasks' | 'browser' | 'notifications' | 'plugins' | 'about';
 
 /** The coding-agent CLI a settings screen is configuring, aliasing LLMProvider so agent-scoped settings read as being about an agent rather than a chat model. */
 export type AgentProvider = LLMProvider;
@@ -1250,7 +1255,7 @@ export type SessionRowActions = {
   onStartEditingSession: (projectId: string, sessionId: string, initialName: string) => void;
   onCancelEditingSession: () => void;
   onSaveEditingSession: (projectId: string, sessionId: string, summary: string, provider: LLMProvider) => void;
-  onDeleteSession: (sessionId: string, sessionTitle: string) => void;
+  onDeleteSession: (sessionId: string, sessionTitle: string, options?: { archiveOnly?: boolean }) => void;
   /** Branches a session into an independent one. Rows hide it for providers that cannot. */
   onForkSession?: (session: SessionWithProvider) => void;
 };
@@ -1563,3 +1568,19 @@ type TaskStatus =
 
 /** A TaskMaster task's priority; high, medium and low are the known values and the string fallback tolerates anything else TaskMaster emits. */
 type TaskPriority = 'high' | 'medium' | 'low' | string;
+
+//----------------- WORKSPACE PROFILE ------------
+/** Persisted display identity, with optional Codex claims and explicit user overrides. */
+export type WorkspaceProfile = {
+  id: number | string;
+  username: string;
+  displayName?: string;
+  avatarUrl: string | null;
+  automaticDisplayName?: string;
+  customDisplayName: string | null;
+  customAvatarUrl: string | null;
+  codex: { connected: boolean; displayName: string | null; avatarUrl: string | null; email: string | null };
+};
+
+/** Complete editable profile; null restores the corresponding automatic Codex value. */
+export type WorkspaceProfileUpdate = { displayName: string | null; avatarUrl: string | null };

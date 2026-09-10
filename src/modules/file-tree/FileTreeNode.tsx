@@ -64,7 +64,7 @@ function TreeItemIcon({ item, isOpen, renderFileIcon }: TreeItemIconProps) {
           )}
         />
         {isOpen ? (
-          <FolderOpen className="h-4 w-4 flex-shrink-0 text-blue-500" />
+          <FolderOpen className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
         ) : (
           <Folder className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
         )}
@@ -112,21 +112,20 @@ export default function FileTreeNode({
   const isDropTarget = isDirectory && dropTarget === item.path;
 
   const nameClassName = cn(
-    'text-[13px] leading-tight truncate',
+    'text-sm leading-5 truncate',
     isDirectory ? 'font-medium text-foreground' : 'text-foreground/90',
   );
 
   // View mode only changes the row layout; selection, expansion, and recursion stay shared.
   const rowClassName = cn(
     viewMode === 'detailed'
-      ? 'group grid grid-cols-12 gap-2 py-[3px] pr-2 hover:bg-accent/60 cursor-pointer items-center rounded-sm transition-colors duration-100'
+      ? 'group grid grid-cols-12 gap-2 min-h-10 py-2 pr-8 sm:min-h-9 sm:py-1.5 hover:bg-accent/60 cursor-pointer items-center rounded-lg transition-colors duration-100'
       : viewMode === 'compact'
-      ? 'group flex items-center justify-between py-[3px] pr-2 hover:bg-accent/60 cursor-pointer rounded-sm transition-colors duration-100'
-      : 'group flex items-center gap-1.5 py-[3px] pr-2 cursor-pointer rounded-sm hover:bg-accent/60 transition-colors duration-100',
-    isDirectory && isOpen && 'border-l-2 border-primary/30',
-    (isDirectory && !isOpen) || !isDirectory ? 'border-l-2 border-transparent' : '',
-    'relative',
-    isDropTarget && 'bg-blue-500/10 ring-1 ring-inset ring-blue-500/40',
+      ? 'group flex items-center justify-between min-h-10 py-2 pr-8 sm:min-h-9 sm:py-1.5 hover:bg-accent/60 cursor-pointer rounded-lg transition-colors duration-100'
+      : 'group flex items-center gap-1.5 min-h-10 py-2 pr-8 sm:min-h-9 sm:py-1.5 cursor-pointer rounded-lg hover:bg-accent/60 transition-colors duration-100',
+    isDirectory && isOpen && 'bg-muted/35',
+    'relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2',
+    isDropTarget && 'bg-accent ring-1 ring-inset ring-border',
   );
 
   // Render rename input if this item is being renamed
@@ -171,7 +170,7 @@ export default function FileTreeNode({
       aria-label={t('fileTree.uploadToFolder', 'Upload files to "{{folder}}"', { folder: item.name })}
       className={cn(
         'absolute right-1 top-1/2 -translate-y-1/2 rounded p-1',
-        'bg-background/80 text-muted-foreground opacity-0 transition-opacity',
+        'bg-background text-muted-foreground opacity-0 transition-opacity [@media(hover:none)]:opacity-100',
         'group-hover:opacity-100 focus-visible:opacity-100 hover:bg-accent hover:text-foreground',
       )}
     >
@@ -182,21 +181,33 @@ export default function FileTreeNode({
   const rowContent = (
     <div
       className={rowClassName}
-      style={{ paddingLeft: `${level * 16 + 4}px` }}
+      style={{ paddingLeft: viewMode === 'detailed' ? 4 : level * 16 + 4 }}
+      role="button"
+      tabIndex={0}
+      aria-label={item.name}
+      aria-expanded={isDirectory ? isOpen : undefined}
+      title={item.name}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onItemClick(item);
+        }
+      }}
       onClick={() => onItemClick(item)}
       onDragOver={onItemDragOver ? (event) => onItemDragOver(event, dragTargetPath) : undefined}
     >
       {viewMode === 'detailed' ? (
         <>
-          <div className="col-span-5 flex min-w-0 items-center gap-1.5">
+          <div className="col-span-5 flex min-w-0 items-center gap-1.5" style={{ paddingLeft: level * 16 }}>
             <TreeItemIcon item={item} isOpen={isOpen} renderFileIcon={renderFileIcon} />
             <span className={nameClassName}>{item.name}</span>
           </div>
-          <div className="col-span-2 text-sm tabular-nums text-muted-foreground">
+          <div className="col-span-2 truncate text-xs tabular-nums text-muted-foreground">
             {item.type === 'file' ? formatFileSize(item.size) : ''}
           </div>
-          <div className="col-span-3 text-sm text-muted-foreground">{formatRelativeTime(item.modified)}</div>
-          <div className="col-span-2 font-mono text-sm text-muted-foreground">{item.permissionsRwx || ''}</div>
+          <div className="col-span-3 truncate text-xs text-muted-foreground">{formatRelativeTime(item.modified)}</div>
+          <div className="col-span-2 truncate font-mono text-xs text-muted-foreground">{item.permissionsRwx || ''}</div>
         </>
       ) : viewMode === 'compact' ? (
         <>
@@ -204,7 +215,7 @@ export default function FileTreeNode({
             <TreeItemIcon item={item} isOpen={isOpen} renderFileIcon={renderFileIcon} />
             <span className={nameClassName}>{item.name}</span>
           </div>
-          <div className="ml-2 flex flex-shrink-0 items-center gap-3 text-sm text-muted-foreground">
+          <div className="ml-2 flex flex-shrink-0 items-center gap-3 text-xs text-muted-foreground">
             {item.type === 'file' && (
               <>
                 <span className="tabular-nums">{formatFileSize(item.size)}</span>

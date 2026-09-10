@@ -781,5 +781,32 @@
     "teamManagementDescription": "Multiple users, role-based access, and shared projects for your team.",
     "licensed": "Licensed under AGPL-3.0",
     "proCta": "Available with Codex-Web Pro"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Choose the name and avatar shown in this workspace. No sign-up or sign-in required.",
+    "avatar": "Display avatar",
+    "upload": "Change avatar",
+    "automaticAvatar": "Use account avatar",
+    "imageHelp": "PNG, JPG or WebP, up to 1 MB.",
+    "imageError": "Choose a valid PNG, JPG or WebP image under 1 MB.",
+    "name": "Display name",
+    "nameHelp": "Leave blank to use your Codex account name. Changes apply only to this workspace.",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "saveError": "Could not save. Please try again.",
+    "reset": "Use automatic profile",
+    "codexTitle": "Codex account details",
+    "codexConnected": "Reads available details from the current authorization. Missing names or avatars use defaults.",
+    "codexDisconnected": "Connect Codex to read available account details, or set your profile manually.",
+    "noAccount": "No account details available",
+    "refresh": "Refresh details",
+    "guideTitle": "Getting started",
+    "guideDescription": "Configure Git identity and Codex authorization when needed. You can close the guide at any time.",
+    "openGuide": "Open guide",
+    "workspaceUnavailable": "The workspace is unavailable. Check that the server is running and try again.",
+    "retry": "Try again",
+    "codexAuthorization": "Codex authorization"
   }
 }

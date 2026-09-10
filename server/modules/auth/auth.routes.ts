@@ -1,57 +1,20 @@
 import express from 'express';
-import type { RequestHandler } from 'express';
+import type { createWorkspaceProfileService } from './workspace-profile.service.js';
 
-import type { createAuthService } from './auth.service.js';
-
-type AuthenticatedRequest = express.Request & { user?: unknown };
-
-/**
- * Creates the Auth transport adapter. Handlers only parse request data and
- * delegate authentication behavior to the injected application service.
- */
-export function createAuthRouter(
-  service: ReturnType<typeof createAuthService>,
-  authenticateToken: RequestHandler,
-): express.Router {
+/** Workspace bootstrap and display settings; legacy sign-in endpoints are retired. */
+export function createAuthRouter(service: ReturnType<typeof createWorkspaceProfileService>): express.Router {
   const router = express.Router();
-
-  router.get('/status', (_req, res, next) => {
-    try {
-      res.json(service.getStatus());
-    } catch (error) {
-      next(error);
-    }
+  router.get('/status', (_req, res) => {
+    res.json({ needsSetup: false, isAuthenticated: true, authenticationRequired: false });
   });
-
-  router.post('/register', async (req, res, next) => {
-    try {
-      const body = req.body as { username?: unknown; password?: unknown };
-      res.json(await service.register(body.username, body.password));
-    } catch (error) {
-      next(error);
-    }
+  router.get('/user', async (_req, res, next) => {
+    try { res.json({ user: await service.getProfile() }); } catch (error) { next(error); }
   });
-
-  router.post('/login', async (req, res, next) => {
-    try {
-      const body = req.body as { username?: unknown; password?: unknown };
-      res.json(await service.login(body.username, body.password));
-    } catch (error) {
-      next(error);
-    }
+  router.put('/profile', async (req, res, next) => {
+    try { res.json({ user: await service.updateProfile(req.body) }); } catch (error) { next(error); }
   });
-
-  router.get('/user', authenticateToken, (req, res) => {
-    res.json(service.getCurrentUser((req as AuthenticatedRequest).user));
+  router.post(['/login', '/register', '/logout', '/refresh'], (_req, res) => {
+    res.status(410).json({ error: 'Codex-Web opens directly. Local sign-in is no longer used.' });
   });
-
-  router.post('/refresh', authenticateToken, (req, res) => {
-    res.json(service.refreshSession((req as AuthenticatedRequest).user));
-  });
-
-  router.post('/logout', authenticateToken, (_req, res) => {
-    res.json(service.logout());
-  });
-
   return router;
 }

@@ -78,22 +78,74 @@
     "resetAt": "Claude 使用限制已達到。您的限制將在 **{{time}} {{timezone}}** - {{date}} 重置"
   },
   "codex": {
-    "permissionMode": "權限模式",
-    "modes": {
-      "default": "預設模式",
-      "auto": "自動模式",
-      "acceptEdits": "編輯模式",
-      "bypassPermissions": "無限制模式",
-      "plan": "計畫模式"
+    "pause": "暫停",
+    "resume": "繼續",
+    "clear": "清除",
+    "close": "關閉",
+    "search": "搜尋",
+    "loading": "載入中…",
+    "retry": "重試",
+    "empty": "目前沒有可用項目",
+    "use": "使用",
+    "connect": "連接",
+    "skills": "技能",
+    "apps": "應用程式",
+    "mcp": "MCP 工具",
+    "needsInput": "需要你補充資訊",
+    "goalStatus": {
+      "active": "正在執行目標",
+      "paused": "已暫停",
+      "blocked": "等待補充資訊",
+      "usageLimited": "已達用量上限",
+      "budgetLimited": "已達權杖預算",
+      "complete": "已完成"
     },
-    "descriptions": {
-      "default": "只有受信任的指令（ls、cat、grep、git status 等）自動執行。其他指令將被略過。可以寫入工作區。",
-      "auto": "由模型分類器針對每次工具呼叫決定核准或拒絕。免手動操作，但比 Bypass 安全——仍可能發生拒絕。",
-      "acceptEdits": "工作區內的所有指令自動執行。完全自動模式，具有沙箱執行功能。",
-      "bypassPermissions": "完全的系統存取，無限制。所有指令自動執行，具有完整的磁碟和網路存取權限。請謹慎使用。",
-      "plan": "計畫模式 - 不執行任何指令"
+    "openLink": "開啟授權頁面",
+    "unsupportedForm": "此表單包含尚不支援的欄位。可以拒絕本次請求，讓工具提供其他方式。",
+    "choose": "請選擇…",
+    "yes": "是",
+    "no": "否",
+    "decline": "拒絕",
+    "confirm": "確認",
+    "automations": "自動化任務",
+    "loadFailed": "無法載入任務。",
+    "saveFailed": "無法儲存任務。",
+    "sessionRequired": "先開始一段對話，再建立定時任務。",
+    "taskPrompt": "任務指令",
+    "interval": "重複間隔（分鐘）",
+    "create": "建立任務",
+    "save": "儲存",
+    "edit": "編輯",
+    "history": "執行記錄",
+    "delete": "刪除",
+    "noRuns": "還沒有執行記錄。",
+    "automationHint": "服務執行時處理；對話忙碌時等待。離線期間錯過的多次執行合併為一次。",
+    "runStatus": {
+      "running": "執行中",
+      "completed": "已完成",
+      "failed": "失敗",
+      "interrupted": "已中斷"
     },
-    "technicalDetails": "技術細節"
+    "voice": "即時語音",
+    "startVoice": "開始語音",
+    "stopVoice": "結束語音",
+    "voiceFailed": "語音連線失敗。",
+    "audioPlayback": "點擊播放以收聽回答。",
+    "voiceState": {
+      "idle": "透過麥克風與 Codex 對話。此功能需要目前 Codex 帳號支援。",
+      "connecting": "連線中…",
+      "connected": "正在聆聽，可以開始說話。"
+    },
+    "artifacts": "產出檔案",
+    "artifactHint": "開啟檔案即可預覽、編輯或下載。HTML 預覽在隔離框架中執行。",
+    "image": "使用已安裝技能產生或編輯圖片",
+    "research": "使用已安裝的深入研究技能",
+    "browser": "使用已安裝技能執行瀏覽器任務",
+    "model": "選擇模型",
+    "context": "查看上下文用量",
+    "agents": "子代理",
+    "stopAgent": "停止代理",
+    "voiceBusy": "請等待目前任務結束後再開始語音。"
   },
   "input": {
     "placeholder": "向 {{provider}} 描述你的任務…",
@@ -259,6 +311,10 @@
     "forkFromHere": "從此處分支"
   },
   "composer": {
+    "commands": {
+      "label": "指令與技能",
+      "empty": "沒有符合的指令或技能"
+    },
     "usageSummary": "用量與訂閱",
     "cache": "快取",
     "cacheDescription": "快取讀取 Token 數 / 總輸入 Token 數",
@@ -266,12 +322,19 @@
     "remaining": "剩餘",
     "quotaSnapshot": "最近回報的方案額度",
     "resetsAt": "重設時間",
-
     "reasoning": "思考檔位",
     "effortDefault": "預設",
     "modelMenu": "選擇模型與思考檔位",
-    "effortLevels": {"none": "關閉", "minimal": "最低", "low": "低", "medium": "中", "high": "高", "xhigh": "極高", "max": "最高", "ultra": "極致"},
-
+    "effortLevels": {
+      "none": "關閉",
+      "minimal": "最低",
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "xhigh": "極高",
+      "max": "最高",
+      "ultra": "極致"
+    },
     "editing": {
       "title": "正在取代先前的訊息",
       "filesNotReverted": "已修改的檔案不會還原",
@@ -318,6 +381,31 @@
     "dismiss": "關閉失敗提示"
   },
   "misc": {
+    "fallbackCommands": {
+      "help": "查看指令說明",
+      "models": "選擇目前對話的模型",
+      "cost": "查看目前對話用量",
+      "config": "開啟設定",
+      "status": "查看執行狀態",
+      "memory": "開啟專案指令檔",
+      "plan": "先擬定計畫，再開始修改",
+      "goal": "設定目標 · 查看、暫停、繼續或清除",
+      "review": "審查程式碼修改",
+      "compact": "壓縮目前對話上下文",
+      "steer": "向執行中的任務追加指令",
+      "skills": "技能",
+      "apps": "應用程式",
+      "mcp": "MCP 工具",
+      "automations": "自動化任務",
+      "voice": "即時語音",
+      "artifacts": "產出檔案",
+      "image": "使用已安裝技能產生或編輯圖片",
+      "research": "使用已安裝的深入研究技能",
+      "browser": "使用已安裝技能執行瀏覽器任務",
+      "model": "選擇模型",
+      "context": "查看上下文用量",
+      "agents": "子代理"
+    },
     "showTokenUsage": "用量詳情"
   }
 }

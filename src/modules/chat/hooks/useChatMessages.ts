@@ -243,6 +243,8 @@ export function normalizedToChatMessages(messages: NormalizedMessage[]): ChatMes
             content: text,
             timestamp: msg.timestamp,
             memoryCitations: msg.memoryCitations,
+            images,
+            files,
             ...sharedMetadata,
           });
         }

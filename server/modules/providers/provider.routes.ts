@@ -1,5 +1,6 @@
 import express, { type Request, type Response } from 'express';
 
+import { codexFeaturesService } from '@/modules/providers/services/codex-features.service.js';
 import { providerAuthService } from '@/modules/providers/services/provider-auth.service.js';
 import { providerCapabilitiesService } from '@/modules/providers/services/provider-capabilities.service.js';
 import { providerMcpService } from '@/modules/providers/services/mcp.service.js';
@@ -503,6 +504,12 @@ const parseCustomProviderModelPayload = (payload: unknown): CustomProviderModelI
 
   return { model, id };
 };
+
+router.get('/codex/features/:kind', asyncHandler(async (req: Request, res: Response) => {
+  const kind = readPathParam(req.params.kind, 'kind');
+  const data = await codexFeaturesService.list(kind, readOptionalQueryString(req.query.workspacePath), readOptionalQueryString(req.query.cursor), req.query.sessionId ? parseSessionId(req.query.sessionId) : undefined);
+  res.json(createApiSuccessResponse(data));
+}));
 
 router.get(
   '/:provider/auth/status',

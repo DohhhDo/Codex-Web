@@ -1,3 +1,5 @@
+import type { WorkspaceProfileUpdate } from '@/shared/types';
+import type { LLMProvider } from '@/shared/types';
 import {
   expireAuthSession,
   getStoredAuthToken,
@@ -160,18 +162,8 @@ export const api = {
   // Auth endpoints (no token required)
   auth: {
     status: () => fetch('/api/auth/status'),
-    login: (username: string, password: string) => fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    }),
-    register: (username: string, password: string) => fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    }),
-    refresh: () => post('/api/auth/refresh'),
     user: () => get('/api/auth/user'),
+    updateProfile: (profile: WorkspaceProfileUpdate) => put('/api/auth/profile', profile),
   },
 
   // Protected endpoints
@@ -410,10 +402,21 @@ export const api = {
   },
 
   // Slash commands
+  automations: {
+    list: (sessionId: string) => get(`/api/automations${query({ sessionId })}`),
+    save: (body: Record<string, unknown>) => post('/api/automations', body),
+    runs: (id: string) => get(`/api/automations/${encodeURIComponent(id)}/runs`),
+    remove: (id: string) => del(`/api/automations/${encodeURIComponent(id)}`),
+  },
+
+  codex: {
+    features: (kind: string, workspacePath?: string, cursor?: string, sessionId?: string) => get(`/api/providers/codex/features/${encodeURIComponent(kind)}${query({ workspacePath, cursor, sessionId })}`),
+  },
+
   commands: {
     // `projectPath` stays optional: a workspace without a resolved path omits
     // the field entirely, which is what the server expects.
-    list: (projectPath: string | undefined) => post('/api/commands/list', { projectPath }),
+    list: (projectPath: string | undefined, provider?: LLMProvider) => post('/api/commands/list', { projectPath, provider }),
     execute: (payload: unknown) => post('/api/commands/execute', payload),
   },
 

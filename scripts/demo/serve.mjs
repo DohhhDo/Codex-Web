@@ -15,6 +15,7 @@ const template = await readFile(path.join(dist, 'index.html'), 'utf8').catch(() 
   throw new Error('Build the frontend first: npm run build:client');
 });
 const token = `demo.${Buffer.from(JSON.stringify({ sub: user.id, exp: 4102444800 })).toString('base64url')}.not-a-real-signature`;
+const profile = { ...user, displayName: user.username, customDisplayName: null, customAvatarUrl: null, codex: { connected: true, displayName: user.username, avatarUrl: user.avatarUrl, email: 'hello@example.com' } };
 const preferences = { selectedProvider: 'codex', userLanguage: 'zh-CN', tasksEnabled: false, uiPreferences: { showThinking: true }, codexPermissions: { permissionMode: 'default', model: 'gpt-6-astra', effort: 'high' } };
 const success = data => ({ success: true, data });
 const mime = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.svg':'image/svg+xml', '.png':'image/png', '.ico':'image/x-icon', '.woff2':'font/woff2', '.json':'application/json' };
@@ -37,7 +38,11 @@ const server = http.createServer(async (req, res) => {
    const body = await readBody(req);
    const theme = /(?:^|;\s*)demo-theme=(light|dark)/.exec(req.headers.cookie || '')?.[1] || 'dark';
    if(p === '/api/auth/status')return send({ needsSetup:false });
-   if(p === '/api/auth/user')return send({ user });
+   if(p === '/api/auth/user')return send({ user: profile });
+   if(p === '/api/auth/profile' && req.method === 'PUT') {
+    Object.assign(profile, { displayName: body.displayName || user.username, username: body.displayName || user.username, avatarUrl: body.avatarUrl || user.avatarUrl, customDisplayName: body.displayName, customAvatarUrl: body.avatarUrl });
+    return send({ user: profile });
+   }
    if(p.startsWith('/api/auth/'))return send({ success:true, user, token });
    if(p === '/api/user/onboarding-status')return send({ hasCompletedOnboarding:true });
    if(p === '/api/user/preferences') {

@@ -3,6 +3,7 @@ import { FolderSimplePlusIcon as FolderPlus } from '@phosphor-icons/react/dist/c
 import { XIcon as X } from '@phosphor-icons/react/dist/csr/X';
 import { useTranslation } from 'react-i18next';
 
+import { Dialog, DialogContent } from '@/shared/ui';
 import ErrorBanner from '@/modules/project-creation-wizard/ErrorBanner';
 import StepConfiguration from '@/modules/project-creation-wizard/StepConfiguration';
 import StepReview from '@/modules/project-creation-wizard/StepReview';
@@ -133,20 +134,21 @@ export default function ProjectCreationWizard({
   );
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 top-0 z-[60] flex items-center justify-center bg-black/50 p-0 backdrop-blur-sm sm:p-4">
-      <div className="h-full w-full overflow-y-auto rounded-none border-0 border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:h-auto sm:max-w-2xl sm:rounded-lg sm:border">
-        <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
+    <Dialog open onOpenChange={open => { if (!open && !isCreating) onClose(); }}>
+      <DialogContent wrapperClassName="z-[60]" aria-label={t('projectWizard.title')} className="w-full overflow-y-auto border-border bg-background dark:border-border dark:bg-secondary sm:max-w-2xl sm:border">
+        <div className="flex items-center justify-between border-b border-border p-6 dark:border-border">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
-              <FolderPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent dark:bg-accent/50">
+              <FolderPlus className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-foreground dark:text-foreground">
               {t('projectWizard.title')}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+            aria-label={t('common:buttons.close')}
+            className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-muted-foreground dark:hover:bg-accent dark:hover:text-muted-foreground"
             disabled={isCreating}
           >
             <X className="h-5 w-5" />
@@ -201,7 +203,7 @@ export default function ProjectCreationWizard({
           onNext={handleNext}
           onCreate={handleCreate}
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -55,7 +55,7 @@ npm run build
 npm run server
 ```
 
-Open **http://localhost:3001**, create a local account when prompted, and select a project.
+Open **http://localhost:3001** and select a project. No local sign-in or registration is required.
 
 If port 3001 is already occupied, set a different `SERVER_PORT` in `.env`. See [.env.example](.env.example) for host, port, and data-path configuration.
 
@@ -83,6 +83,12 @@ Open **http://localhost:3002**. The default conversation is “Moon Radio.” Ot
 - `/session/demo-2`: the cat translator.
 
 Demo APIs use in-memory fixtures. Chat returns a canned reply, and the terminal does not execute commands. The demo does not read real sessions or the authentication database, or call a model. See the [demo documentation](scripts/demo/README.md).
+
+## Direct access and profile
+
+Codex-Web opens without local sign-in or registration. Anyone who can reach the service can use the shared workspace. Existing owner records retain preferences and drafts; Codex authorization remains separate.
+
+Settings → Profile supports a display name and PNG/JPG/WebP avatar up to 1 MB, persisted on the server. Available Codex identity claims supply defaults; manual overrides take precedence. The optional setup guide is available here too.
 
 ## Usage and local data
 

@@ -79,22 +79,74 @@
     "resetAt": "Claude 使用限制已达到。您的限制将在 **{{time}} {{timezone}}** - {{date}} 重置"
   },
   "codex": {
-    "permissionMode": "权限模式",
-    "modes": {
-      "default": "默认模式",
-      "auto": "Auto Mode",
-      "acceptEdits": "编辑模式",
-      "bypassPermissions": "无限制模式",
-      "plan": "计划模式"
+    "pause": "暂停",
+    "resume": "继续",
+    "clear": "清除",
+    "close": "关闭",
+    "search": "搜索",
+    "loading": "正在加载…",
+    "retry": "重试",
+    "empty": "暂无可用项目",
+    "use": "使用",
+    "connect": "连接",
+    "skills": "技能",
+    "apps": "应用",
+    "mcp": "MCP 工具",
+    "needsInput": "需要你补充信息",
+    "goalStatus": {
+      "active": "正在执行目标",
+      "paused": "已暂停",
+      "blocked": "等待补充信息",
+      "usageLimited": "已达用量上限",
+      "budgetLimited": "已达令牌预算",
+      "complete": "已完成"
     },
-    "descriptions": {
-      "default": "只有受信任的命令（ls、cat、grep、git status 等）自动运行。其他命令将被跳过。可以写入工作区。",
-      "auto": "A model classifier decides per tool call whether to approve or deny. Hands-off, but safer than Bypass — denials still happen.",
-      "acceptEdits": "工作区内的所有命令自动运行。完全自动模式，具有沙盒执行功能。",
-      "bypassPermissions": "完全的系统访问，无限制。所有命令自动运行，具有完整的磁盘和网络访问权限。请谨慎使用。",
-      "plan": "计划模式 - 不执行任何命令"
+    "openLink": "打开授权页面",
+    "unsupportedForm": "此表单包含暂不支持的字段。可以拒绝本次请求，让工具提供其他方式。",
+    "choose": "请选择…",
+    "yes": "是",
+    "no": "否",
+    "decline": "拒绝",
+    "confirm": "确认",
+    "automations": "自动化任务",
+    "loadFailed": "无法加载任务。",
+    "saveFailed": "无法保存任务。",
+    "sessionRequired": "先开始一段对话，再创建定时任务。",
+    "taskPrompt": "任务指令",
+    "interval": "重复间隔（分钟）",
+    "create": "创建任务",
+    "save": "保存",
+    "edit": "编辑",
+    "history": "运行记录",
+    "delete": "删除",
+    "noRuns": "还没有运行记录。",
+    "automationHint": "服务运行时执行；会话忙碌时等待。离线期间错过的多次执行合并为一次。",
+    "runStatus": {
+      "running": "运行中",
+      "completed": "已完成",
+      "failed": "失败",
+      "interrupted": "已中断"
     },
-    "technicalDetails": "技术细节"
+    "voice": "实时语音",
+    "startVoice": "开始语音",
+    "stopVoice": "结束语音",
+    "voiceFailed": "语音连接失败。",
+    "audioPlayback": "点击播放以收听回答。",
+    "voiceState": {
+      "idle": "通过麦克风与 Codex 对话。此功能需要当前 Codex 账号支持。",
+      "connecting": "正在连接…",
+      "connected": "正在聆听，可以开始说话。"
+    },
+    "artifacts": "产物",
+    "artifactHint": "打开文件即可预览、编辑或下载。HTML 预览在隔离框架中运行。",
+    "image": "使用已安装技能生成或编辑图片",
+    "research": "使用已安装的深度研究技能",
+    "browser": "使用已安装技能执行浏览器任务",
+    "model": "选择模型",
+    "context": "查看上下文用量",
+    "agents": "子代理",
+    "stopAgent": "停止代理",
+    "voiceBusy": "请等待当前任务结束后再开始语音。"
   },
   "voice": {
     "input": "语音输入",
@@ -244,6 +296,10 @@
     "forkFromHere": "从此处派生"
   },
   "composer": {
+    "commands": {
+      "label": "命令与技能",
+      "empty": "没有匹配的命令或技能"
+    },
     "usageSummary": "用量与订阅",
     "cache": "缓存",
     "cacheDescription": "缓存读取 Token 数 / 总输入 Token 数",
@@ -251,12 +307,19 @@
     "remaining": "余",
     "quotaSnapshot": "最近上报的套餐额度",
     "resetsAt": "重置时间",
-
     "reasoning": "思考档位",
     "effortDefault": "默认",
     "modelMenu": "选择模型与思考档位",
-    "effortLevels": {"none": "关闭", "minimal": "最低", "low": "低", "medium": "中", "high": "高", "xhigh": "极高", "max": "最高", "ultra": "极致"},
-
+    "effortLevels": {
+      "none": "关闭",
+      "minimal": "最低",
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "xhigh": "极高",
+      "max": "最高",
+      "ultra": "极致"
+    },
     "editing": {
       "title": "正在替换先前的消息",
       "filesNotReverted": "已修改的文件不会被还原",
@@ -303,6 +366,54 @@
     "dismiss": "关闭失败提示"
   },
   "misc": {
+    "fallbackCommands": {
+      "help": "查看命令帮助",
+      "models": "选择当前对话的模型",
+      "cost": "查看当前会话用量",
+      "config": "打开设置",
+      "status": "查看运行状态",
+      "memory": "打开项目指令文件",
+      "plan": "先制定计划，再开始修改",
+      "goal": "设置目标 · 查看、暂停、继续或清除",
+      "review": "审查代码修改",
+      "compact": "压缩当前对话上下文",
+      "steer": "向运行中的任务追加指令",
+      "skills": "技能",
+      "apps": "应用",
+      "mcp": "MCP 工具",
+      "automations": "自动化任务",
+      "voice": "实时语音",
+      "artifacts": "产物",
+      "image": "使用已安装技能生成或编辑图片",
+      "research": "使用已安装的深度研究技能",
+      "browser": "使用已安装技能执行浏览器任务",
+      "model": "选择模型",
+      "context": "查看上下文用量",
+      "agents": "子代理"
+    },
     "showTokenUsage": "用量详情"
+  },
+  "modelLibrary": {
+    "title": "模型库",
+    "description": "添加服务支持的模型 ID。内置目录保持只读。",
+    "back": "返回模型选择",
+    "name": "模型名称",
+    "id": "模型 ID",
+    "idHelp": "填写服务支持的完整模型 ID，不可包含空格。",
+    "customTitle": "自定义模型",
+    "customDescription": "保存在工作区中，可随时编辑。",
+    "emptyTitle": "还没有自定义模型",
+    "emptyDescription": "添加后，即可在模型选择菜单中使用。",
+    "builtIn": "内置模型",
+    "builtInDescription": "来自服务的模型目录，只读。",
+    "custom": "自定义",
+    "deleteConfirm": "从所有模型选择菜单中移除此模型？",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑自定义模型",
+    "add": "添加模型",
+    "saving": "正在保存…",
+    "save": "保存更改",
+    "sentAsWritten": "模型 ID 将原样发送给 {{provider}}。"
   }
 }

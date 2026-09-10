@@ -9,6 +9,8 @@ import type { ProviderAuthStatus } from '@/shared/types.js';
 import { readObjectRecord, readOptionalString } from '@/shared/utils.js';
 
 type CodexCredentialsStatus = {
+  displayName?: string;
+  avatarUrl?: string;
   authenticated: boolean;
   email: string | null;
   method: string | null;
@@ -22,8 +24,7 @@ export class CodexProviderAuth implements IProviderAuth {
    */
   private checkInstalled(): boolean {
     try {
-      spawn.sync('codex', ['--version'], { stdio: 'ignore', timeout: 5000 });
-      return true;
+      return spawn.sync('codex', ['--version'], { stdio: 'ignore', timeout: 5000 }).status === 0;
     } catch {
       return false;
     }
@@ -38,6 +39,8 @@ export class CodexProviderAuth implements IProviderAuth {
 
     return {
       installed,
+      displayName: credentials.displayName,
+      avatarUrl: credentials.avatarUrl,
       provider: 'codex',
       authenticated: credentials.authenticated,
       email: credentials.email,
@@ -52,7 +55,7 @@ export class CodexProviderAuth implements IProviderAuth {
    */
   private async checkCredentials(): Promise<CodexCredentialsStatus> {
     try {
-      const authPath = path.join(os.homedir(), '.codex', 'auth.json');
+      const authPath = path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'auth.json');
       const content = await readFile(authPath, 'utf8');
       const auth = readObjectRecord(JSON.parse(content)) ?? {};
       const tokens = readObjectRecord(auth.tokens) ?? {};
@@ -61,6 +64,7 @@ export class CodexProviderAuth implements IProviderAuth {
 
       if (idToken || accessToken) {
         return {
+          ...this.readDisplayClaims(idToken),
           authenticated: true,
           email: idToken ? this.readEmailFromIdToken(idToken) : 'Authenticated',
           method: 'credentials_file',
@@ -81,6 +85,20 @@ export class CodexProviderAuth implements IProviderAuth {
         method: null,
         error: code === 'ENOENT' ? 'Codex not configured' : error instanceof Error ? error.message : 'Failed to read Codex auth',
       };
+    }
+  }
+
+  /** Local identity claims are display hints only; no account network request is made. */
+  private readDisplayClaims(idToken: string | undefined): { displayName?: string; avatarUrl?: string } {
+    try {
+      const payload = readObjectRecord(JSON.parse(Buffer.from(idToken?.split('.')[1] || '', 'base64url').toString('utf8')));
+      const profile = readObjectRecord(payload?.['https://api.openai.com/profile']);
+      const name = readOptionalString(payload?.name) ?? readOptionalString(profile?.name);
+      const picture = readOptionalString(payload?.picture) ?? readOptionalString(profile?.picture);
+      const url = picture ? new URL(picture) : null;
+      return { displayName: name?.slice(0, 80), avatarUrl: url?.protocol === 'https:' && !url.username && !url.password ? url.href : undefined };
+    } catch {
+      return {};
     }
   }
 
